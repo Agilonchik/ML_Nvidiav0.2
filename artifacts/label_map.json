@@ -1,0 +1,14 @@
+{
+    "0": "Background",
+    "1": "BS_CL_es",
+    "2": "BS_CL_intermediate",
+    "3": "Obstacle_CL_ground",
+    "4": "Obstacle_CL_ground1",
+    "5": "Obstacle_CL_rail",
+    "6": "Obstacle_CL_road",
+    "7": "Obstacle_CL_water",
+    "8": "Other_CL_sky",
+    "9": "Superstructure_CL_cons",
+    "10": "Superstructure_CL_cons_under",
+    "11": "Superstructure_CL_road"
+}

@@ -1,0 +1,30 @@
+project:
+  name: "unet_segmentation_v1"
+  seed: 42
+
+paths:
+  data_dir: "data"
+  models_dir: "models"
+  logs_dir: "logs"
+  artifacts_dir: "artifacts"
+  checkpoints_dir: "checkpoints"
+
+data:
+  image_size: [512, 512] # Разрешение должно быть кратно 16 для U-Net
+  batch_size: 16         # Уменьшен батч-сайз, сегментация ест больше памяти
+  classes: ['Background', 'BS_CL_es', 'BS_CL_intermediate', 'Obstacle_CL_ground', 'Obstacle_CL_ground1', 'Obstacle_CL_rail', 'Obstacle_CL_road', 'Obstacle_CL_water', 'Other_CL_sky', 'Superstructure_CL_cons', 'Superstructure_CL_cons_under', 'Superstructure_CL_road']
+  use_augmentation: false # Для генератора отключим сложные аугментации для стабильности
+  cache: false
+
+model:
+  type: "unet"
+  learning_rate: 0.00005
+
+training:
+  epochs: 30
+  early_stopping_patience: 12
+  reduce_lr_patience: 6
+  reduce_lr_factor: 0.5
+
+inference:
+  alpha: 0.5 # Прозрачность наложения маски (0 до 1)

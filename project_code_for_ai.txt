@@ -1,0 +1,3749 @@
+ОПИСАНИЕ ПРОЕКТА ДЛЯ ИИ
+Структура и исходный код
+
+
+============================================================
+ФАЙЛ: 1.txt
+============================================================
+
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "BS_CL_intermediate",
+      "points": [
+        [
+          75.0,
+          263.0
+        ],
+        [
+          717.0,
+          430.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "..."
+    },
+    {
+      "label": "Superstructure_CL_cons_under",
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          799.0,
+          269.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "..."
+    }
+  ],
+  "imagePath": "178352548.png",
+  "imageData": "..."
+  "imageHeight": 599,
+  "imageWidth": 800
+}
+
+============================================================
+ФАЙЛ: app.py
+============================================================
+
+import streamlit as st
+import cv2
+import json
+import numpy as np
+import os
+import base64
+import yaml
+from pathlib import Path
+from tensorflow.keras.models import load_model
+
+# ==========================================
+# 1. КОНФИГУРАЦИЯ И ПУТИ
+# ==========================================
+st.set_page_config(page_title="U-Net HIL Annotation Tool", layout="wide")
+
+BASE_DIR = Path(__file__).resolve().parent
+CONFIG_PATH = BASE_DIR / "configs" / "config.yaml"
+
+@st.cache_data
+def load_project_config(path):
+    with open(path, 'r', encoding='utf-8') as f:
+        return yaml.safe_load(f)
+
+if not CONFIG_PATH.exists():
+    st.error(f"❌ Конфиг не найден: {CONFIG_PATH}")
+    st.stop()
+
+config = load_project_config(CONFIG_PATH)
+data_cfg = config.get('data', {})
+
+if 'classes' in data_cfg:
+    CLASS_NAMES = data_cfg['classes']
+elif 'classes' in config:
+    CLASS_NAMES = config['classes']
+else:
+    CLASS_NAMES = ["Background"]
+
+IMG_SIZE = tuple(data_cfg.get('image_size', (512, 512)))
+OVERLAY_ALPHA = config.get('inference', {}).get('alpha', 0.5)
+MODEL_PATH = BASE_DIR / "models" / "final_model.keras"
+
+np.random.seed(42)
+_colors_raw = np.random.randint(50, 255, size=(len(CLASS_NAMES), 3), dtype=np.uint8)
+COLORS = [tuple(map(int, c)) for c in _colors_raw]
+COLORS[0] = (0, 0, 0) 
+
+PATHS = {
+    "train": Path("data/train"),
+    "val": Path("data/val"),
+    "unlabelled": Path("data/unlabelled"),
+    "train_pl": Path("data/train_pl")
+}
+for p in PATHS.values(): p.mkdir(parents=True, exist_ok=True)
+
+# ==========================================
+# 2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+# ==========================================
+
+@st.cache_resource
+# 💡 Добавляем show_spinner, чтобы ты видел, когда грузятся новые веса
+@st.cache_resource(show_spinner="🔄 Обнаружена новая модель! Загружаем веса...")
+def get_model(path_str, file_mod_time):
+    if not os.path.exists(path_str): return None
+    try: 
+        # Принудительно ставим политику для инференса, чтобы не было пустых тензоров
+        from tensorflow.keras import mixed_precision
+        mixed_precision.set_global_policy('mixed_float16')
+        return load_model(path_str, compile=False)
+    except Exception as e: 
+        st.error(f"Ошибка загрузки модели: {e}")
+        return None
+
+def preprocess_image(img_path, target_size):
+    img = cv2.imread(str(img_path))
+    if img is None: return None, None
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    h_orig, w_orig = img_rgb.shape[:2]
+    img_res = cv2.resize(img_rgb, target_size, interpolation=cv2.INTER_LINEAR)
+    return np.expand_dims(img_res.astype(np.float32), axis=0), (h_orig, w_orig)
+
+def postprocess_prediction(pred, orig_shape):
+    # Растягиваем вероятности плавно (INTER_CUBIC)
+    pred_resized = cv2.resize(pred[0], (orig_shape[1], orig_shape[0]), interpolation=cv2.INTER_CUBIC)
+    mask = np.argmax(pred_resized, axis=-1).astype(np.uint8)
+    
+    # 🪄 Морфологическое сглаживание (убираем пыль и дырки)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    
+    return mask
+
+def mask_to_rgb(mask, colors):
+    h, w = mask.shape
+    rgb = np.zeros((h, w, 3), dtype=np.uint8)
+    for idx in range(1, len(colors)):
+        rgb[mask == idx] = colors[idx]
+    return rgb
+
+def apply_overlay(image, mask_rgb, alpha=0.5):
+    image_bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    mask_bgr = cv2.cvtColor(mask_rgb, cv2.COLOR_RGB2BGR)
+    res = cv2.addWeighted(image_bgr, 1.0, mask_bgr, alpha, 0)
+    return cv2.cvtColor(res, cv2.COLOR_BGR2RGB)
+
+def save_labelme_json(img_path, mask, class_names, output_dir):
+    img_name = img_path.name
+    output_json = output_dir / img_path.with_suffix('.json').name
+    img = cv2.imread(str(img_path))
+    h, w = img.shape[:2]
+    shapes = []
+
+    for idx in range(1, len(class_names)):
+        class_mask = (mask == idx).astype(np.uint8) * 255
+        if np.sum(class_mask) == 0: continue
+        contours, _ = cv2.findContours(class_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if contours:
+            c = max(contours, key=cv2.contourArea)
+            x, y, wb, hb = cv2.boundingRect(c)
+            local_mask = class_mask[y:y+hb, x:x+wb]
+            _, encoded = cv2.imencode('.png', local_mask)
+            shapes.append({
+                "label": class_names[idx],
+                "points": [[float(x), float(y)], [float(x+wb), float(y+hb)]],
+                "shape_type": "mask",
+                "mask": base64.b64encode(encoded).decode('utf-8')
+            })
+
+    json_data = {"version": "5.11.3", "shapes": shapes, "imagePath": img_name, "imageHeight": h, "imageWidth": w}
+    with open(output_json, 'w', encoding='utf-8') as f: json.dump(json_data, f, indent=2)
+    import shutil
+    shutil.copy2(img_path, output_dir / img_name)
+    return output_json
+
+# ==========================================
+# 3. ИНТЕРФЕЙС
+# ==========================================
+
+st.sidebar.title("💎 U-Net HIL Control")
+app_mode = st.sidebar.selectbox("Режим", ["Просмотр разметки (HIL)", "Авто-разметка новых данных"])
+
+# --- МАГИЯ АВТО-ОБНОВЛЕНИЯ КЭША ---
+if MODEL_PATH.exists():
+    mod_time = os.path.getmtime(MODEL_PATH)
+else:
+    mod_time = 0
+
+model = get_model(str(MODEL_PATH), mod_time)
+# ----------------------------------
+
+if app_mode == "Просмотр разметки (HIL)":
+    st.header("🔍 Режим Human-in-the-Loop: Сравнение")
+    
+    ds_type = st.radio("Папка:", ["train", "val"], horizontal=True)
+    folder = PATHS[ds_type]
+    json_files = list(folder.glob("*.json"))
+
+    if not json_files:
+        st.info("В папке нет JSON файлов.")
+    else:
+        selected_json = st.selectbox("Файл:", [f.name for f in json_files])
+        json_path = folder / selected_json
+        
+        pred_mask = None
+        img_path = None
+        for ext in ['.jpg', '.jpeg', '.png', '.bmp']:
+            if json_path.with_suffix(ext).exists():
+                img_path = json_path.with_suffix(ext)
+                break
+        
+        if img_path:
+            img_bgr = cv2.imread(str(img_path))
+            img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+            h_orig, w_orig = img_rgb.shape[:2]
+
+            mask_gt = np.zeros((h_orig, w_orig), dtype=np.uint8)
+            
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            cls_lower = [str(c).lower().strip() for c in CLASS_NAMES]
+            debug_logs = []
+            
+            if 'shapes' in data:
+                for sh in data['shapes']:
+                    lbl_orig = sh.get('label', '')
+                    lbl = str(lbl_orig).lower().strip()
+                    
+                    if lbl in cls_lower:
+                        idx = cls_lower.index(lbl)
+                        pts = sh.get('points', [])
+                        sType = sh.get('shape_type', '')
+                        
+                        try:
+                            pixels_drawn = 0 # Вводим счетчик реальных пикселей!
+                            
+                            if sType == 'mask' and 'mask' in sh:
+                                m_bytes = base64.b64decode(sh['mask'])
+                                # Читаем маску В ЛЮБОМ формате (даже если она цветная или с прозрачностью)
+                                m_img = cv2.imdecode(np.frombuffer(m_bytes, np.uint8), cv2.IMREAD_UNCHANGED)
+                                
+                                if m_img is not None and len(pts) >= 2:
+                                    # Если в маске несколько каналов (RGB/RGBA), сплющиваем в один
+                                    if len(m_img.shape) > 2:
+                                        m_img = np.max(m_img, axis=2)
+                                        
+                                    x = int(min(pts[0][0], pts[1][0]))
+                                    y = int(min(pts[0][1], pts[1][1]))
+                                    hm, wm = m_img.shape[:2]
+                                    
+                                    ye, xe = min(y + hm, h_orig), min(x + wm, w_orig)
+                                    x_start, y_start = max(0, x), max(0, y)
+                                    
+                                    if (ye - y_start) > 0 and (xe - x_start) > 0:
+                                        roi = mask_gt[y_start:ye, x_start:xe]
+                                        m_crop = m_img[y_start-y : ye-y, x_start-x : xe-x]
+                                        
+                                        # БЕРЕМ ВСЁ, ЧТО БОЛЬШЕ 0 (а не 127)!
+                                        valid_pixels = m_crop > 0 
+                                        roi[valid_pixels] = idx
+                                        pixels_drawn = np.sum(valid_pixels)
+                                        
+                            elif sType == 'rectangle' or len(pts) == 2:
+                                x1 = max(0, int(min(pts[0][0], pts[1][0])))
+                                y1 = max(0, int(min(pts[0][1], pts[1][1])))
+                                x2 = min(w_orig, int(max(pts[0][0], pts[1][0])))
+                                y2 = min(h_orig, int(max(pts[0][1], pts[1][1])))
+                                pixels_drawn = (x2 - x1) * (y2 - y1)
+                                if pixels_drawn > 0:
+                                    cv2.rectangle(mask_gt, (x1, y1), (x2, y2), idx, -1)
+                                
+                            elif sType == 'polygon' or len(pts) >= 3:
+                                temp = np.zeros_like(mask_gt)
+                                cv2.fillPoly(temp, [np.array(pts, np.int32)], idx)
+                                mask_gt = np.where(temp > 0, idx, mask_gt)
+                                pixels_drawn = np.sum(temp > 0)
+                            
+                            # Честный отчет в дебаг-панель
+                            if pixels_drawn > 0:
+                                debug_logs.append(f"✅ Нарисовано: {lbl_orig} ({sType}) -> {pixels_drawn} пикселей")
+                            else:
+                                debug_logs.append(f"⚠️ Пусто: {lbl_orig} найден, но внутри 0 пикселей!")
+                                
+                        except Exception as e:
+                            debug_logs.append(f"❌ Ошибка кода при отрисовке {lbl_orig}: {e}")
+                    else:
+                        debug_logs.append(f"❌ Пропущено: {lbl_orig} (Нет в конфиге)")
+
+            
+            with st.expander("🛠 Дебаг-панель", expanded=False):
+                for log in debug_logs: st.write(log)
+
+            # --- Предсказание нейросети ---
+            if model:
+                inp, shp = preprocess_image(img_path, IMG_SIZE)
+                if inp is not None:
+                    res = model.predict(inp, verbose=0)
+                    pred_mask = postprocess_prediction(res, shp)
+
+            # --- Отрисовка Общего вида ---
+            st.subheader("📊 Общий вид")
+            c1, c2, c3 = st.columns(3)
+            c1.image(img_rgb, caption="Оригинал", use_container_width=True)
+            
+            m_gt_rgb = mask_to_rgb(mask_gt, COLORS)
+            c2.image(apply_overlay(img_rgb, m_gt_rgb, OVERLAY_ALPHA), caption="Разметка человека", use_container_width=True)
+            
+            if pred_mask is not None:
+                m_pred_rgb = mask_to_rgb(pred_mask, COLORS)
+                c3.image(apply_overlay(img_rgb, m_pred_rgb, OVERLAY_ALPHA), caption="Нейросеть", use_container_width=True)
+
+            # --- Детальный разбор ---
+            st.markdown("---")
+            st.subheader("🧩 Детально по НАЙДЕННЫМ классам")
+            
+            drawn_any = False
+            for i in range(1, len(CLASS_NAMES)):
+                in_gt = np.any(mask_gt == i)
+                in_pred = pred_mask is not None and np.any(pred_mask == i)
+                
+                # Показываем только если класс ЕСТЬ в разметке или предсказании
+                if in_gt or in_pred:
+                    drawn_any = True
+                    st.markdown(f"**Класс: {CLASS_NAMES[i]}**")
+                    l, r = st.columns(2)
+                    
+                    if in_gt:
+                        single_gt = np.zeros_like(mask_gt)
+                        single_gt[mask_gt == i] = i
+                        single_rgb_gt = mask_to_rgb(single_gt, COLORS)
+                        # Накладываем НА ОРИГИНАЛЬНОЕ ФОТО
+                        l.image(apply_overlay(img_rgb, single_rgb_gt, OVERLAY_ALPHA), caption=f"Эталон: {CLASS_NAMES[i]}", use_container_width=True)
+                    else:
+                        l.info("Отсутствует в ручной разметке")
+                    
+                    if in_pred:
+                        single_pred = np.zeros_like(mask_gt)
+                        single_pred[pred_mask == i] = i
+                        single_rgb_pred = mask_to_rgb(single_pred, COLORS)
+                        # Накладываем НА ОРИГИНАЛЬНОЕ ФОТО
+                        r.image(apply_overlay(img_rgb, single_rgb_pred, OVERLAY_ALPHA), caption=f"Нейросеть: {CLASS_NAMES[i]}", use_container_width=True)
+                    else:
+                        r.info("Нейросеть не обнаружила")
+
+            if not drawn_any:
+                st.warning("На этом фото нет ни одного объекта из списка классов (только фон).")
+
+elif app_mode == "Авто-разметка новых данных":
+    # (Оставляем вкладку авто-разметки как была)
+    st.header("🔮 Автоматическая разметка")
+    # ...
+    st.info("Переключитесь на вкладку HIL, чтобы проверить разметку.")
+
+============================================================
+ФАЙЛ: augment_data.py
+============================================================
+
+import cv2
+import json
+import numpy as np
+import base64
+from pathlib import Path
+import random
+import uuid
+import sys
+import os
+
+# ==========================================
+# КОНФИГУРАЦИЯ
+# ==========================================
+TARGET_SIZE = (512, 512)
+
+# ==========================================
+# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (ДЛЯ МАСОК)
+# ==========================================
+def decode_mask(b64_str):
+    try:
+        mask_bytes = base64.b64decode(b64_str)
+        mask_img = cv2.imdecode(np.frombuffer(mask_bytes, np.uint8), cv2.IMREAD_UNCHANGED)
+        if mask_img is not None and len(mask_img.shape) > 2:
+            mask_img = np.max(mask_img, axis=2)
+        return mask_img
+    except: return None
+
+def encode_mask(mask_img):
+    if len(mask_img.shape) > 2: mask_img = np.max(mask_img, axis=2)
+    _, encoded = cv2.imencode('.png', mask_img)
+    return base64.b64encode(encoded).decode('utf-8')
+
+def get_full_mask(shape, h, w):
+    full_m = np.zeros((h, w), dtype=np.uint8)
+    if shape.get('shape_type') == 'mask' and 'mask' in shape:
+        m = decode_mask(shape['mask'])
+        if m is not None:
+            pts = shape['points']
+            mx = int(min(pts[0][0], pts[1][0]))
+            my = int(min(pts[0][1], pts[1][1]))
+            mh, mw = m.shape[:2]
+            ye, xe = min(my + mh, h), min(mx + mw, w)
+            my_start, mx_start = max(0, my), max(0, mx)
+            if (ye - my_start) > 0 and (xe - mx_start) > 0:
+                full_m[my_start:ye, mx_start:xe] = m[my_start-my:ye-my, mx_start-mx:xe-mx]
+    return full_m
+
+def extract_local_mask(full_m):
+    contours, _ = cv2.findContours((full_m > 0).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not contours: return None, None
+    c = max(contours, key=cv2.contourArea)
+    x, y, w_bbox, h_bbox = cv2.boundingRect(c)
+    local_m = full_m[y:y+h_bbox, x:x+w_bbox]
+    pts = [[float(x), float(y)], [float(x+w_bbox), float(y+h_bbox)]]
+    return local_m, pts
+
+def save_augmentation(orig_img_path, new_img, new_data, suffix):
+    unique_id = uuid.uuid4().hex[:4]
+    new_img_name = f"{orig_img_path.stem}_{suffix}_{unique_id}{orig_img_path.suffix}"
+    # Сохраняем в ТУ ЖЕ папку, где лежал оригинал (train или val)
+    new_img_path = orig_img_path.parent / new_img_name
+    new_data['imagePath'] = new_img_name
+    new_data['imageData'] = None
+    cv2.imwrite(str(new_img_path), new_img)
+    with open(new_img_path.with_suffix('.json'), 'w', encoding='utf-8') as f:
+        json.dump(new_data, f, indent=2)
+
+# ==========================================
+# МОДУЛИ АУГМЕНТАЦИИ
+# ==========================================
+def augment_flip(img, data):
+    h, w = img.shape[:2]
+    new_img = cv2.flip(img, 1)
+    new_data = json.loads(json.dumps(data))
+    valid_shapes = []
+    for s in new_data.get('shapes', []):
+        if s.get('shape_type') == 'mask' and 'mask' in s:
+            full_m = get_full_mask(s, h, w)
+            flipped_full_m = cv2.flip(full_m, 1)
+            local_m, new_pts = extract_local_mask(flipped_full_m)
+            if local_m is not None:
+                s['mask'] = encode_mask(local_m)
+                s['points'] = new_pts
+                valid_shapes.append(s)
+        else:
+            s['points'] = [[w - p[0], p[1]] for p in s['points']]
+            valid_shapes.append(s)
+    new_data['shapes'] = valid_shapes
+    return new_img, new_data, "aug_flip"
+
+def augment_crop(img, data):
+    h, w = img.shape[:2]
+    all_pts = [p for s in data.get('shapes', []) for p in s['points']]
+    if not all_pts: return None, None, None
+    tp = random.choice(all_pts)
+    cw, ch = int(w * random.uniform(0.4, 0.7)), int(h * random.uniform(0.4, 0.7))
+    x1, y1 = int(max(0, min(tp[0]-cw//2, w-cw))), int(max(0, min(tp[1]-ch//2, h-ch)))
+    x2, y2 = x1 + cw, y1 + ch
+    new_img = cv2.resize(img[y1:y2, x1:x2], TARGET_SIZE)
+    new_data = json.loads(json.dumps(data))
+    valid_shapes = []
+    for s in new_data.get('shapes', []):
+        if s.get('shape_type') == 'mask' and 'mask' in s:
+            full_m = get_full_mask(s, h, w)
+            cropped_m = full_m[y1:y2, x1:x2]
+            cm = cv2.resize(cropped_m, TARGET_SIZE, interpolation=cv2.INTER_NEAREST)
+            local_m, new_pts = extract_local_mask(cm)
+            if local_m is not None:
+                s['mask'] = encode_mask(local_m)
+                s['points'] = new_pts
+                valid_shapes.append(s)
+        else:
+            np_pts = (np.array(s['points']) - [x1, y1]) * [TARGET_SIZE[0]/cw, TARGET_SIZE[1]/ch]
+            if np.any((np_pts[:, 0] >= 0) & (np_pts[:, 0] <= TARGET_SIZE[0]) & 
+                      (np_pts[:, 1] >= 0) & (np_pts[:, 1] <= TARGET_SIZE[1])):
+                s['points'] = np_pts.tolist()
+                valid_shapes.append(s)
+    if not valid_shapes: return None, None, None
+    new_data['shapes'] = valid_shapes
+    return new_img, new_data, "aug_crop"
+
+def augment_color(img, data):
+    new_img = cv2.convertScaleAbs(img, alpha=random.uniform(0.8, 1.2), beta=random.randint(-30, 30))
+    return new_img, json.loads(json.dumps(data)), "aug_color"
+
+def augment_noise_blur(img, data):
+    new_img = img.copy()
+    # С вероятностью 50% делаем либо размытие, либо шум
+    if random.random() > 0.5:
+        # Гауссовское размытие (эффект скорости / расфокуса)
+        k = random.choice([3, 5, 7])
+        new_img = cv2.GaussianBlur(new_img, (k, k), 0)
+    else:
+        # Гауссовский шум (эффект дешевой камеры / ночи)
+        noise = np.random.normal(0, 15, new_img.shape).astype(np.uint8)
+        new_img = cv2.add(new_img, noise)
+        
+    # Данные масок не меняются, геометрия осталась прежней!
+    return new_img, json.loads(json.dumps(data)), "aug_noise"
+
+def augment_cutout(img, data):
+    new_img = img.copy()
+    h, w = new_img.shape[:2]
+    
+    # Добавляем от 1 до 4 черных "заплаток"
+    for _ in range(random.randint(1, 4)):
+        # Размер заплатки от 5% до 15% экрана
+        box_h = int(h * random.uniform(0.05, 0.15))
+        box_w = int(w * random.uniform(0.05, 0.15))
+        
+        x = random.randint(0, w - box_w)
+        y = random.randint(0, h - box_h)
+        
+        # Закрашиваем черным
+        new_img[y:y+box_h, x:x+box_w] = (0, 0, 0)
+        
+    # Данные масок остаются! Сеть будет вынуждена догадываться о скрытом объекте
+    return new_img, json.loads(json.dumps(data)), "aug_cutout"
+
+# ==========================================
+# ГЛАВНЫЙ ЗАПУСК (КАСКАДНАЯ ЛОГИКА)
+# ==========================================
+def main():
+    print("\n" + "="*50, flush=True)
+    print("🛠 СКРИПТ АУГМЕНТАЦИИ [TRAIN & VAL]", flush=True)
+    print("="*50 + "\n", flush=True)
+
+    # 1. ВЫБОР ПАПКИ
+    print("📁 Выберите папки для обработки:")
+    print("  1. Только data/train (Для обучения)")
+    print("  2. Только data/val   (Для валидации)")
+    print("  3. Обе папки         (train + val)")
+    
+    if len(sys.argv) > 2: # Если передано аргументами, например: python script.py 3 1
+        folder_choice = sys.argv[2]
+    else:
+        print("\n⌨️ Ваш выбор папок (по умолчанию 1): ", end='', flush=True)
+        folder_choice = sys.stdin.readline().strip()
+
+    target_dirs = []
+    if folder_choice == '2':
+        target_dirs.append(Path("data/val"))
+    elif folder_choice == '3':
+        target_dirs.append(Path("data/train"))
+        target_dirs.append(Path("data/val"))
+    else:
+        target_dirs.append(Path("data/train"))
+
+    for d in target_dirs:
+        if not d.exists():
+            print(f"❌ Ошибка: Папка {d} не найдена!", flush=True)
+            return
+
+    # 2. ВЫБОР МЕТОДА
+    print("\n🛠 Выберите методы (номера через запятую, например: 1,2,4):")
+    print("  1. 🪞 Горизонтальное отражение (Flip)")
+    print("  2. ☀️ Яркость/Контраст (Color)")
+    print("  3. ✂️ Умная случайная обрезка (Smart Crop - ОСТОРОЖНО!)")
+    print("  4. 🌫️ Шум и Размытие (Blur & Noise - ТОП ДЛЯ ФОРМ)")
+    print("  5. ⬛ Перекрытия (Cutout - ПРОТИВ ПЕРЕОБУЧЕНИЯ)")
+    print("  9. 🗑  УДАЛИТЬ ВСЕ АУГМЕНТАЦИИ из выбранных папок")
+    print("  0. Выход")
+    
+    if len(sys.argv) > 1:
+        choice = sys.argv[1]
+    else:
+        print("\n⌨️ Ваш выбор методов: ", end='', flush=True)
+        choice = sys.stdin.readline().strip()
+
+    if not choice or '0' in choice:
+        print("❌ Выход.", flush=True)
+        return
+
+    # 3. ОЧИСТКА
+    if '9' in choice:
+        del_count = 0
+        for d in target_dirs:
+            for f in d.glob("*_aug_*"):
+                os.remove(f)
+                del_count += 1
+        print(f"🧹 Очистка завершена! Удалено файлов: {del_count}", flush=True)
+        return
+
+    mods = []
+    if '1' in choice: mods.append((augment_flip, "aug_flip", "Отражение"))
+    if '2' in choice: mods.append((augment_color, "aug_color", "Цвет"))
+    if '3' in choice: mods.append((augment_crop, "aug_crop", "Обрезка"))
+    if '4' in choice: mods.append((augment_noise_blur, "aug_noise", "Шум/Размытие"))
+    if '5' in choice: mods.append((augment_cutout, "aug_cutout", "Перекрытия"))
+
+    total_generated = 0
+
+    # 4. ВЫПОЛНЕНИЕ ДЛЯ КАЖДОЙ ПАПКИ
+    for current_dir in target_dirs:
+        print("\n" + "="*50, flush=True)
+        print(f"🚀 ЗАПУСК В ПАПКЕ: {current_dir}", flush=True)
+        print("="*50, flush=True)
+
+        for m_func, sfx_name, ru_name in mods:
+            print(f"\n▶️ ЭТАП: {ru_name}...", flush=True)
+            
+            current_files = list(current_dir.glob("*.json"))
+            files_to_process = [f for f in current_files if sfx_name not in f.name]
+            
+            print(f"   Файлов в очереди на обработку: {len(files_to_process)}", flush=True)
+            
+            step_count = 0
+            for j_path in files_to_process:
+                img_path = next((j_path.with_suffix(ext) for ext in ['.jpg','.png','.jpeg'] if j_path.with_suffix(ext).exists()), None)
+                if not img_path: continue
+                
+                img = cv2.imread(str(img_path))
+                with open(j_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    
+                ni, nd, sfx = m_func(img, data)
+                if ni is not None:
+                    save_augmentation(img_path, ni, nd, sfx)
+                    step_count += 1
+                    total_generated += 1
+                    
+            print(f"   ✅ Создано файлов на этом этапе: {step_count}", flush=True)
+
+    print("\n" + "="*50, flush=True)
+    print(f"🎉 СЕССИЯ ЗАВЕРШЕНА! Всего сгенерировано новых файлов: {total_generated}", flush=True)
+    print("="*50 + "\n", flush=True)
+
+if __name__ == "__main__":
+    main()
+
+============================================================
+ФАЙЛ: Boot.py
+============================================================
+
+wsl
+source ~/unet-env/bin/activate
+streamlit run app.py
+python train.py
+python diag_scr.py
+python augment_data.py
+
+============================================================
+ФАЙЛ: check_gpu.py
+============================================================
+
+import tensorflow as tf
+print("Devices:", tf.config.list_physical_devices('GPU'))
+
+
+============================================================
+ФАЙЛ: diag_scr.py
+============================================================
+
+import os
+import random
+import json
+import base64
+import yaml
+from pathlib import Path
+import cv2
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras import mixed_precision
+
+# ==========================================
+# 🚀 1. ИНИЦИАЛИЗАЦИЯ И СЕТАП ЖЕЛЕЗА
+# ==========================================
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+def setup_hardware():
+    """Memory Growth и Mixed Precision"""
+    gpus = tf.config.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus: tf.config.experimental.set_memory_growth(gpu, True)
+            print("✅ Memory Growth включен.")
+        except: pass
+    
+    # Включаем Mixed Precision, чтобы диагност читал модель корректно
+    mixed_precision.set_global_policy('mixed_float16')
+    print("⚡ Mixed Precision включен.")
+
+# ==========================================
+# 🧬 2. ВСПОМОГАТЕЛЬНАЯ МАТЕМАТИКА (dataset.py)
+# ==========================================
+def decode_mask(b64_str):
+    try:
+        mask_bytes = base64.b64decode(b64_str)
+        m_img = cv2.imdecode(np.frombuffer(mask_bytes, np.uint8), cv2.IMREAD_UNCHANGED)
+        if m_img is not None and len(m_img.shape) > 2: m_img = np.max(m_img, axis=2)
+        return m_img
+    except: return None
+
+def mask_to_rgb(mask, colors):
+    h, w = mask.shape
+    rgb = np.zeros((h, w, 3), dtype=np.uint8)
+    for idx in range(1, len(colors)): rgb[mask == idx] = colors[idx]
+    return rgb
+
+# ==========================================
+# 🛠 3. ГЛАВНЫЙ ЦИКЛ ДИАГНОСТИКИ
+# ==========================================
+def main():
+    setup_hardware()
+    
+    # Загрузка конфига
+    with open("configs/config.yaml", "r", encoding="utf-8") as f: config = yaml.safe_load(f)
+    VAL_DIR = Path("data/val")
+    MODEL_PATH = Path("models/final_model.keras")
+    OUTPUT_PATH = Path("artifacts/diagnostics.png")
+    IMG_SIZE = tuple(config["data"]["image_size"])
+    CLASS_NAMES = config['data']['classes']
+
+    if not MODEL_PATH.exists():
+        print(f"❌ Ошибка: Модель не найдена по пути {MODEL_PATH}")
+        return
+
+    # Генерация цветов (фон=черный, остальные - яркие)
+    np.random.seed(42)
+    COLORS = np.random.randint(50, 255, size=(len(CLASS_NAMES), 3), dtype=np.uint8)
+    COLORS[0] = (0, 0, 0)
+    
+    # Загрузка модели (БЕЗ компиляции, нам только предсказания)
+    print("🌀 Загрузка модели...")
+    model = tf.keras.models.load_model(str(MODEL_PATH), compile=False)
+    
+    # Сбор и выбор файлов
+    json_files = list(VAL_DIR.glob("*.json"))
+    # Игнорируем аугментации, если они есть в val
+    json_files = [f for f in json_files if "_aug_" not in f.name]
+    
+    if len(json_files) < 5:
+        print(f"❌ Ошибка: В data/val меньше 5 оригинальных файлов ({len(json_files)})")
+        return
+    
+    selected_jsons = random.sample(json_files, 5)
+    
+    grid_rows = []
+    
+    # Стандартизируем размер для вывода на панель (например, 320x320)
+    DISPLAY_SIZE = (320, 320)
+    
+    print("\n🔬 Начинаю анализ 5 образцов...")
+    for j_path in selected_jsons:
+        # Ищем картинку
+        img_path = None
+        for ext in ['.jpg','.jpeg','.png','.bmp']:
+            if j_path.with_suffix(ext).exists():
+                img_path = j_path.with_suffix(ext)
+                break
+        if not img_path: continue
+        
+        # --- 1. ОРИГИНАЛ ---
+        img_bgr = cv2.imread(str(img_path))
+        orig_h, orig_w = img_bgr.shape[:2]
+        
+        # --- 2. ЭТАЛОН (GT) ---
+        mask_gt = np.zeros((orig_h, orig_w), dtype=np.uint8)
+        with open(j_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            if 'shapes' in data:
+                for shape in data['shapes']:
+                    label = shape.get('label', '')
+                    if label in CLASS_NAMES:
+                        idx = CLASS_NAMES.index(label)
+                        pts = shape.get('points', [])
+                        sType = shape.get('shape_type', '')
+                        try:
+                            if sType == 'mask' and 'mask' in shape:
+                                m_img = decode_mask(shape['mask'])
+                                if m_img is not None and len(pts) >= 2:
+                                    x, y = int(min(pts[0][0], pts[1][0])), int(min(pts[0][1], pts[1][1]))
+                                    hm, wm = m_img.shape[:2]
+                                    ye, xe = min(y + hm, orig_h), min(x + wm, orig_w)
+                                    roi, m_crop = mask_gt[max(0, y):ye, max(0, x):xe], m_img[max(0, y)-y:ye-y, max(0, x)-x:xe-x]
+                                    roi[m_crop > 0] = idx
+                            elif sType == 'rectangle' or len(pts) == 2:
+                                cv2.rectangle(mask_gt, (int(pts[0][0]), int(pts[0][1])), (int(pts[1][0]), int(pts[1][1])), idx, -1)
+                            elif sType == 'polygon' or len(pts) >= 3:
+                                cv2.fillPoly(mask_gt, [np.array(pts, np.int32)], idx)
+                        except: pass
+        
+        # --- 3. ПРЕДСКАЗАНИЕ (PRED) ---
+        # Подготовка тензора
+        img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+        inp = cv2.resize(img_rgb, IMG_SIZE, interpolation=cv2.INTER_LINEAR)
+        inp = np.expand_dims(inp.astype(np.float32), axis=0)
+        
+        # Инференс и postprocess
+        pred_probs = model.predict(inp, verbose=0)[0]
+        pred_mask = np.argmax(pred_probs, axis=-1).astype(np.uint8)
+        
+        # Обязательно возвращаем маску к оригинальному размеру для честного сравнения!
+        pred_mask = cv2.resize(pred_mask, (orig_w, orig_h), interpolation=cv2.INTER_NEAREST)
+        
+        # --- 4. ОЦЕНКА ОШИБОК ПОД МИКРОСКОПОМ (СТРОГАЯ ПРОВЕРКА) ---
+        # Где реально есть объекты (не фон)
+        gt_objects_mask = (mask_gt > 0)
+        total_gt_pixels = np.sum(gt_objects_mask)
+        
+        # Где сеть угадала ИМЕННО ПРАВИЛЬНЫЙ КЛАСС (И это не фон)
+        correct_pixels_mask = (pred_mask == mask_gt) & gt_objects_mask
+        correct_pixels = np.sum(correct_pixels_mask)
+        
+        # Считаем процент именно ВЕРНЫХ совпадений
+        if total_gt_pixels > 0:
+            true_accuracy = (correct_pixels / total_gt_pixels) * 100
+            
+            if true_accuracy > 50:
+                match = f"✅ Точное попадание: {true_accuracy:.1f}%"
+            elif true_accuracy > 10:
+                match = f"⚠️ Частичное совпадение: {true_accuracy:.1f}%"
+            else:
+                match = f"❌ Промах (Не тот класс): {true_accuracy:.1f}%"
+        else:
+            # Если на картинке вообще нет объектов (только фон)
+            if np.sum(pred_mask > 0) > 0:
+                match = "❌ Галлюцинация (Нарисовала объект на фоне)"
+            else:
+                match = "✅ Идеально чистый фон"
+
+        # --- 5. КОМПОНОВКА ПАНЕЛИ ---
+        p1 = cv2.resize(img_bgr, DISPLAY_SIZE)
+        
+        # Красим маски в BGR для сохранения в файл
+        m_gt_rgb = mask_to_rgb(mask_gt, COLORS)
+        m_gt_bgr = cv2.cvtColor(m_gt_rgb, cv2.COLOR_RGB2BGR)
+        p2 = cv2.resize(m_gt_bgr, DISPLAY_SIZE, interpolation=cv2.INTER_NEAREST)
+        
+        m_pred_rgb = mask_to_rgb(pred_mask, COLORS)
+        m_pred_bgr = cv2.cvtColor(m_pred_rgb, cv2.COLOR_RGB2BGR)
+        p3 = cv2.resize(m_pred_bgr, DISPLAY_SIZE, interpolation=cv2.INTER_NEAREST)
+        
+        # Добавляем текстовый отчет на панель (с фоном для читаемости)
+        cv2.rectangle(p3, (0, DISPLAY_SIZE[1]-25), (DISPLAY_SIZE[0], DISPLAY_SIZE[1]), (0,0,0), -1)
+        cv2.putText(p3, match, (10, DISPLAY_SIZE[1]-8), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
+
+        row = np.hstack([p1, p2, p3])
+        grid_rows.append(row)
+        print(f"   Обработан файл {j_path.name}: {match}")
+
+    # Финальная склейка и сохранение
+    print("\n✅ Компоновка диагностической панели...")
+    final_grid = np.vstack(grid_rows)
+    # Добавляем заголовки
+    header = np.zeros((50, final_grid.shape[1], 3), dtype=np.uint8)
+    w_p = DISPLAY_SIZE[0]
+    cv2.putText(header, "Original Image", (10, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+    cv2.putText(header, "Your Annotation (GT)", (w_p + 10, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+    cv2.putText(header, "Network Prediction (Pred)", (w_p*2 + 10, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+    
+    final_output = np.vstack([header, final_grid])
+    cv2.imwrite(str(OUTPUT_PATH), final_output)
+    print(f"🎉 Готово! Строгая диагностика сохранена в: {OUTPUT_PATH}")
+
+if __name__ == "__main__":
+    main()
+
+============================================================
+ФАЙЛ: find_classes.py
+============================================================
+
+import json
+from pathlib import Path
+
+def find_all_classes():
+    unique_classes = set()
+    
+    # Ищем во всех папках
+    for split in ['train', 'val']:
+        folder = Path(f"data/{split}")
+        if folder.exists():
+            for j_path in folder.glob("*.json"):
+                with open(j_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    if 'shapes' in data:
+                        for shape in data['shapes']:
+                            label = shape.get('label', '')
+                            # Добавляем только если это не пустая строка
+                            if label: 
+                                unique_classes.add(label)
+    
+    # Сортируем по алфавиту и добавляем Background первым
+    final_list = ["Background"] + sorted(list(unique_classes))
+    
+    print("\n" + "="*50)
+    print("✅ ГОТОВО! Скопируй строчку ниже и вставь в configs/config.yaml:")
+    print("="*50 + "\n")
+    # Красиво печатаем в формате YAML
+    print(f"classes: {final_list}\n")
+
+if __name__ == "__main__":
+    find_all_classes()
+
+============================================================
+ФАЙЛ: gen.py
+============================================================
+
+import os
+from pathlib import Path
+
+def create_project():
+    project_name = "image_classification_project" # Оставим имя папки прежним для совместимости
+    base_path = Path(project_name)
+
+    directories = [
+        "configs", "data/train", "data/val", "models", "logs", 
+        "artifacts", "checkpoints", "src/utils", "src/data", 
+        "src/models", "src/training", "src/evaluation", "src/inference"
+    ]
+
+    files_content = {
+        "requirements.txt": """tensorflow==2.15.0
+keras==2.15.0
+PyYAML==6.0.1
+scikit-learn==1.4.0
+matplotlib==3.8.2
+pandas==2.2.0
+numpy==1.26.3
+opencv-python==4.9.0.80
+""",
+
+        "configs/config.yaml": """project:
+  name: "unet_segmentation_v1"
+  seed: 42
+
+paths:
+  data_dir: "data"
+  models_dir: "models"
+  logs_dir: "logs"
+  artifacts_dir: "artifacts"
+  checkpoints_dir: "checkpoints"
+
+data:
+  image_size: [224, 224] # Разрешение должно быть кратно 16 для U-Net
+  batch_size: 16         # Уменьшен батч-сайз, сегментация ест больше памяти
+  use_augmentation: false # Для генератора отключим сложные аугментации для стабильности
+  cache: false
+
+model:
+  type: "unet"
+  learning_rate: 0.001
+
+training:
+  epochs: 30
+  early_stopping_patience: 7
+  reduce_lr_patience: 3
+  reduce_lr_factor: 0.5
+
+inference:
+  alpha: 0.5 # Прозрачность наложения маски (0 до 1)
+""",
+
+        "src/utils/logger.py": """import logging
+import sys
+from pathlib import Path
+
+def setup_logger(name: str, log_dir: Path) -> logging.Logger:
+    logger = logging.getLogger(name)
+    if logger.hasHandlers(): return logger
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    log_file = log_dir / "project.log"
+    fh = logging.FileHandler(log_file, encoding='utf-8')
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+    return logger
+""",
+
+        "src/utils/config_parser.py": """import yaml
+from pathlib import Path
+
+def load_config(config_path: str = "configs/config.yaml") -> dict:
+    root_dir = Path(__file__).resolve().parents[2]
+    full_config_path = root_dir / config_path
+    if not full_config_path.exists(): raise FileNotFoundError(f"Config not found: {full_config_path}")
+    with open(full_config_path, "r", encoding="utf-8") as f: config = yaml.safe_load(f)
+    paths = config.get("paths", {})
+    for key, folder in paths.items():
+        if key != "data_dir":
+            dir_path = root_dir / folder
+            dir_path.mkdir(parents=True, exist_ok=True)
+            config["paths"][key] = str(dir_path)
+    config["paths"]["data_dir"] = str(root_dir / paths.get("data_dir", "data"))
+    config["root_dir"] = str(root_dir)
+    return config
+""",
+
+        # Генератор масок из JSON полигонов
+        "src/data/dataset.py": """import tensorflow as tf
+import numpy as np
+import cv2
+from pathlib import Path
+import json
+import logging
+
+class DataPipeline:
+    def __init__(self, config: dict, logger: logging.Logger):
+        self.config = config
+        self.logger = logger
+        self.data_dir = Path(config["paths"]["data_dir"])
+        self.train_dir = self.data_dir / "train"
+        self.val_dir = self.data_dir / "val"
+        self.img_size = tuple(config["data"]["image_size"])
+        self.batch_size = config["data"]["batch_size"]
+        
+        self.class_names = ["background"] # Индекс 0 всегда фон
+        self.num_classes = 1
+
+    def _find_image_for_json(self, json_path: Path):
+        for ext in ['.jpg', '.jpeg', '.png', '.bmp']:
+            img_path = json_path.with_suffix(ext)
+            if img_path.exists(): return img_path
+            img_path = json_path.with_suffix(ext.upper())
+            if img_path.exists(): return img_path
+        return None
+
+    def _scan_classes(self):
+        self.logger.info("Scanning for unique classes in JSON files...")
+        classes = set()
+        for j_path in list(self.train_dir.glob("*.json")) + list(self.val_dir.glob("*.json")):
+            with open(j_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if 'shapes' in data: # Формат LabelMe
+                    for shape in data['shapes']: classes.add(shape.get('label', ''))
+        
+        self.class_names.extend(sorted(list(classes)))
+        self.num_classes = len(self.class_names)
+        self.logger.info(f"Classes found ({self.num_classes}): {self.class_names}")
+        self._save_class_names()
+
+    def _data_generator(self, dir_path):
+        json_files = list(Path(dir_path).glob("*.json"))
+        
+        def generator():
+            for j_path in json_files:
+                img_path = self._find_image_for_json(j_path)
+                if not img_path: continue
+                
+                # Читаем картинку
+                img = cv2.imread(str(img_path))
+                if img is None: continue
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                orig_h, orig_w = img.shape[:2]
+                
+                # Создаем пустую маску фона (нули)
+                mask = np.zeros((orig_h, orig_w), dtype=np.uint8)
+                
+                # Парсим полигоны и рисуем маску
+                with open(j_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    if 'shapes' in data:
+                        for shape in data['shapes']:
+                            label = shape.get('label', '')
+                            if label in self.class_names:
+                                class_idx = self.class_names.index(label)
+                                points = np.array(shape.get('points', []), dtype=np.int32)
+                                if len(points) >= 3:
+                                    cv2.fillPoly(mask, [points], class_idx)
+                
+                # Ресайз
+                img = cv2.resize(img, self.img_size, interpolation=cv2.INTER_LINEAR)
+                # Маску ресайзим с INTER_NEAREST, чтобы индексы классов не смешались в дроби!
+                mask = cv2.resize(mask, self.img_size, interpolation=cv2.INTER_NEAREST)
+                
+                img = img.astype(np.float32)
+                mask = np.expand_dims(mask, axis=-1).astype(np.int32)
+                
+                yield img, mask
+        
+        return generator
+
+    def create_datasets(self):
+        self._scan_classes()
+
+        output_signature = (
+            tf.TensorSpec(shape=(self.img_size[1], self.img_size[0], 3), dtype=tf.float32),
+            tf.TensorSpec(shape=(self.img_size[1], self.img_size[0], 1), dtype=tf.int32)
+        )
+
+        train_ds = tf.data.Dataset.from_generator(
+            self._data_generator(self.train_dir), output_signature=output_signature
+        )
+        val_ds = tf.data.Dataset.from_generator(
+            self._data_generator(self.val_dir), output_signature=output_signature
+        )
+
+        train_ds = train_ds.shuffle(100).batch(self.batch_size).prefetch(tf.data.AUTOTUNE)
+        val_ds = val_ds.batch(self.batch_size).prefetch(tf.data.AUTOTUNE)
+
+        return train_ds, val_ds, self.num_classes
+
+    def _save_class_names(self):
+        artifacts_dir = Path(self.config["paths"]["artifacts_dir"])
+        mapping_path = artifacts_dir / "label_map.json"
+        mapping = {i: name for i, name in enumerate(self.class_names)}
+        with open(mapping_path, "w", encoding="utf-8") as f:
+            json.dump(mapping, f, indent=4)
+        self.logger.info(f"Class mapping saved to {mapping_path}")
+""",
+
+        # Чистая архитектура U-Net
+        "src/models/model_builder.py": """import tensorflow as tf
+from tensorflow.keras import layers, models
+import logging
+
+class ModelBuilder:
+    def __init__(self, config: dict, num_classes: int, logger: logging.Logger):
+        self.config = config
+        self.num_classes = num_classes
+        self.logger = logger
+        self.img_size = tuple(config["data"]["image_size"]) + (3,)
+
+    def build(self) -> tf.keras.Model:
+        self.logger.info("Building U-Net Semantic Segmentation model...")
+        
+        inputs = layers.Input(shape=self.img_size)
+        x = layers.Rescaling(1./255)(inputs)
+
+        # --- Encoder (Downsampling) ---
+        c1 = layers.Conv2D(32, 3, activation='relu', padding='same')(x)
+        c1 = layers.Conv2D(32, 3, activation='relu', padding='same')(c1)
+        p1 = layers.MaxPooling2D(2)(c1)
+
+        c2 = layers.Conv2D(64, 3, activation='relu', padding='same')(p1)
+        c2 = layers.Conv2D(64, 3, activation='relu', padding='same')(c2)
+        p2 = layers.MaxPooling2D(2)(c2)
+
+        c3 = layers.Conv2D(128, 3, activation='relu', padding='same')(p2)
+        c3 = layers.Conv2D(128, 3, activation='relu', padding='same')(c3)
+        p3 = layers.MaxPooling2D(2)(c3)
+
+        # --- Bottleneck ---
+        b = layers.Conv2D(256, 3, activation='relu', padding='same')(p3)
+        b = layers.Conv2D(256, 3, activation='relu', padding='same')(b)
+
+        # --- Decoder (Upsampling & Skip Connections) ---
+        u1 = layers.UpSampling2D(2)(b)
+        u1 = layers.Concatenate()([u1, c3])
+        c4 = layers.Conv2D(128, 3, activation='relu', padding='same')(u1)
+        c4 = layers.Conv2D(128, 3, activation='relu', padding='same')(c4)
+
+        u2 = layers.UpSampling2D(2)(c4)
+        u2 = layers.Concatenate()([u2, c2])
+        c5 = layers.Conv2D(64, 3, activation='relu', padding='same')(u2)
+        c5 = layers.Conv2D(64, 3, activation='relu', padding='same')(c5)
+
+        u3 = layers.UpSampling2D(2)(c5)
+        u3 = layers.Concatenate()([u3, c1])
+        c6 = layers.Conv2D(32, 3, activation='relu', padding='same')(u3)
+        c6 = layers.Conv2D(32, 3, activation='relu', padding='same')(c6)
+
+        # --- Output ---
+        # Для многоклассовой сегментации используем softmax на каждый пиксель
+        outputs = layers.Conv2D(self.num_classes, 1, activation='softmax')(c6)
+
+        model = models.Model(inputs, outputs)
+        
+        optimizer = tf.keras.optimizers.Adam(learning_rate=self.config["model"]["learning_rate"])
+        
+        # sparse_categorical_crossentropy позволяет кормить маску в виде int индексов (0, 1, 2...)
+        model.compile(
+            optimizer=optimizer, 
+            loss='sparse_categorical_crossentropy', 
+            metrics=['sparse_categorical_accuracy']
+        )
+        
+        self.logger.info("U-Net model compiled successfully.")
+        return model
+""",
+
+        "src/training/trainer.py": """import tensorflow as tf
+from pathlib import Path
+import logging
+
+class Trainer:
+    def __init__(self, model: tf.keras.Model, config: dict, logger: logging.Logger):
+        self.model = model
+        self.config = config
+        self.logger = logger
+        self.epochs = config["training"]["epochs"]
+        self.checkpoints_dir = Path(config["paths"]["checkpoints_dir"])
+        self.logs_dir = Path(config["paths"]["logs_dir"])
+        self.models_dir = Path(config["paths"]["models_dir"])
+
+    def _get_callbacks(self) -> list:
+        ckpt_path = self.checkpoints_dir / "best_model.keras"
+        csv_path = self.logs_dir / "training_log.csv"
+        tb_path = self.logs_dir / "tensorboard"
+
+        callbacks = [
+            tf.keras.callbacks.ModelCheckpoint(
+                filepath=str(ckpt_path), monitor='val_loss', # Сохраняем по лоссу валидации
+                save_best_only=True, verbose=1
+            ),
+            tf.keras.callbacks.EarlyStopping(
+                monitor='val_loss', patience=self.config["training"]["early_stopping_patience"], 
+                restore_best_weights=True, verbose=1
+            ),
+            tf.keras.callbacks.ReduceLROnPlateau(
+                monitor='val_loss', factor=self.config["training"]["reduce_lr_factor"], 
+                patience=self.config["training"]["reduce_lr_patience"], verbose=1
+            ),
+            tf.keras.callbacks.CSVLogger(str(csv_path)),
+            tf.keras.callbacks.TensorBoard(log_dir=str(tb_path), histogram_freq=1)
+        ]
+        return callbacks
+
+    def train(self, train_ds: tf.data.Dataset, val_ds: tf.data.Dataset):
+        self.logger.info("Starting U-Net training process...")
+        history = self.model.fit(
+            train_ds, validation_data=val_ds,
+            epochs=self.epochs, callbacks=self._get_callbacks()
+        )
+        final_model_path = self.models_dir / "final_model.keras"
+        self.model.save(str(final_model_path))
+        self.logger.info(f"Training completed. Final model saved to {final_model_path}")
+        return history
+""",
+
+        # Оценка обучения
+        "src/evaluation/evaluator.py": """import numpy as np
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import pandas as pd
+from pathlib import Path
+import json
+import logging
+
+class Evaluator:
+    def __init__(self, model: tf.keras.Model, config: dict, logger: logging.Logger):
+        self.model = model
+        self.config = config
+        self.logger = logger
+        self.artifacts_dir = Path(config["paths"]["artifacts_dir"])
+
+    def evaluate(self, val_ds: tf.data.Dataset, history):
+        self.logger.info("Generating training history plots...")
+        self._plot_history(history)
+        self.logger.info("Evaluation complete.")
+
+    def _plot_history(self, history):
+        hist_df = pd.DataFrame(history.history)
+        plt.figure(figsize=(12, 5))
+        
+        plt.subplot(1, 2, 1)
+        plt.plot(hist_df['loss'], label='Train Loss')
+        plt.plot(hist_df['val_loss'], label='Val Loss')
+        plt.title('Loss (Sparse Categ. Crossentropy)')
+        plt.legend()
+        
+        plt.subplot(1, 2, 2)
+        plt.plot(hist_df['sparse_categorical_accuracy'], label='Train Acc')
+        plt.plot(hist_df['val_sparse_categorical_accuracy'], label='Val Acc')
+        plt.title('Pixel Accuracy')
+        plt.legend()
+        
+        plt.tight_layout()
+        plt.savefig(self.artifacts_dir / "training_history.png")
+        plt.close()
+""",
+
+        # Инференс масок с наложением (Overlay)
+        "src/inference/predictor.py": """import tensorflow as tf
+import numpy as np
+import cv2
+from pathlib import Path
+import json
+import logging
+import matplotlib.pyplot as plt
+
+class Predictor:
+    def __init__(self, config: dict, logger: logging.Logger):
+        self.config = config
+        self.logger = logger
+        self.img_size = tuple(config["data"]["image_size"])
+        self.alpha = config["inference"].get("alpha", 0.5)
+        
+        models_dir = Path(config["paths"]["models_dir"])
+        self.artifacts_dir = Path(config["paths"]["artifacts_dir"])
+        
+        map_path = self.artifacts_dir / "label_map.json"
+        if not map_path.exists(): raise FileNotFoundError("label_map.json not found.")
+        
+        with open(map_path, "r", encoding="utf-8") as f:
+            self.idx_to_class = json.load(f)
+            self.num_classes = len(self.idx_to_class)
+            
+        # Генерация ярких случайных цветов для классов (фон = черный)
+        np.random.seed(42)
+        self.colors = np.random.randint(0, 255, size=(self.num_classes, 3), dtype=np.uint8)
+        self.colors[0] = [0, 0, 0] # Background
+            
+        model_path = models_dir / "final_model.keras"
+        if not model_path.exists(): raise FileNotFoundError("Model not found.")
+        
+        self.logger.info("Loading U-Net model...")
+        self.model = tf.keras.models.load_model(str(model_path))
+        self.logger.info("Model loaded.")
+
+    def predict_single(self, img_path: str, save_output=True):
+        path = Path(img_path)
+        if not path.exists():
+            self.logger.error(f"Image not found: {path}")
+            return None
+            
+        try:
+            # Читаем через OpenCV (оставляем оригинал для красивого наложения)
+            orig_img = cv2.imread(str(path))
+            orig_img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2RGB)
+            orig_shape = orig_img.shape[:2]
+            
+            # Подготовка для модели
+            img_resized = cv2.resize(orig_img, self.img_size)
+            img_tensor = np.expand_dims(img_resized, axis=0).astype(np.float32)
+            
+            # Инференс маски: предсказываем класс для каждого пикселя
+            pred_probs = self.model.predict(img_tensor, verbose=0)[0] # Shape: (H, W, Classes)
+            pred_mask = np.argmax(pred_probs, axis=-1).astype(np.uint8) # Shape: (H, W)
+            
+            # Возвращаем размер маски к оригинальному разрешению изображения
+            pred_mask = cv2.resize(pred_mask, (orig_shape[1], orig_shape[0]), interpolation=cv2.INTER_NEAREST)
+            
+            if save_output:
+                # Создаем цветную маску
+                color_mask = np.zeros_like(orig_img)
+                for class_idx in range(1, self.num_classes): # Пропускаем фон
+                    color_mask[pred_mask == class_idx] = self.colors[class_idx]
+                
+                # Наложение маски на оригинал с прозрачностью alpha
+                overlay = cv2.addWeighted(orig_img, 1.0, color_mask, self.alpha, 0)
+                
+                out_path = self.artifacts_dir / f"pred_{path.name}"
+                overlay_bgr = cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR)
+                cv2.imwrite(str(out_path), overlay_bgr)
+                self.logger.info(f"Saved segmentation overlay to {out_path}")
+            
+            return pred_mask
+        except Exception as e:
+            self.logger.error(f"Error predicting {path.name}: {e}")
+            return None
+
+    def predict_folder(self, folder_path: str):
+        folder = Path(folder_path)
+        if not folder.is_dir(): return
+        
+        images = [p for p in folder.iterdir() if p.suffix.lower() in {'.png', '.jpg', '.jpeg', '.bmp'}]
+        self.logger.info(f"Found {len(images)} images for segmentation.")
+        
+        # Сохраним легенду цветов
+        self._save_legend()
+        
+        for img_path in images:
+            self.predict_single(str(img_path))
+
+    def _save_legend(self):
+        plt.figure(figsize=(4, self.num_classes * 0.5))
+        for i in range(1, self.num_classes):
+            plt.plot([0], [0], color=self.colors[i]/255.0, label=self.idx_to_class[str(i)], linewidth=10)
+        plt.legend(loc='center', fontsize=12)
+        plt.axis('off')
+        plt.savefig(self.artifacts_dir / "color_legend.png", bbox_inches='tight')
+        plt.close()
+""",
+
+        "train.py": """import os
+import tensorflow as tf
+from src.utils.config_parser import load_config
+from src.utils.logger import setup_logger
+from src.data.dataset import DataPipeline
+from src.models.model_builder import ModelBuilder
+from src.training.trainer import Trainer
+from src.evaluation.evaluator import Evaluator
+from pathlib import Path
+
+def main():
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+    config = load_config()
+    logger = setup_logger("TrainerLogger", Path(config["paths"]["logs_dir"]))
+    tf.random.set_seed(config["project"]["seed"])
+
+    try:
+        pipeline = DataPipeline(config, logger)
+        train_ds, val_ds, num_classes = pipeline.create_datasets()
+
+        builder = ModelBuilder(config, num_classes, logger)
+        model = builder.build()
+        model.summary(print_fn=logger.info)
+
+        trainer = Trainer(model, config, logger)
+        history = trainer.train(train_ds, val_ds)
+
+        evaluator = Evaluator(model, config, logger)
+        evaluator.evaluate(val_ds, history)
+
+        logger.info("Segmentation training finished successfully.")
+
+    except Exception as e:
+        logger.exception(f"Fatal error during training: {e}")
+
+if __name__ == "__main__":
+    main()
+""",
+
+        "predict.py": """import argparse
+import os
+from src.utils.config_parser import load_config
+from src.utils.logger import setup_logger
+from src.inference.predictor import Predictor
+from pathlib import Path
+
+def main():
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+    parser = argparse.ArgumentParser(description="U-Net Semantic Segmentation Inference")
+    parser.add_argument("--image", type=str, help="Path to a single image")
+    parser.add_argument("--folder", type=str, help="Path to a folder of images")
+    args = parser.parse_args()
+
+    config = load_config()
+    logger = setup_logger("PredictorLogger", Path(config["paths"]["logs_dir"]))
+
+    if not args.image and not args.folder:
+        logger.error("Please provide either --image or --folder.")
+        return
+
+    try:
+        predictor = Predictor(config, logger)
+
+        if args.image:
+            logger.info(f"Running inference on: {args.image}")
+            predictor.predict_single(args.image)
+
+        if args.folder:
+            logger.info(f"Running inference on folder: {args.folder}")
+            predictor.predict_folder(args.folder)
+
+    except Exception as e:
+        logger.exception(f"Fatal error during inference: {e}")
+
+if __name__ == "__main__":
+    main()
+""",
+        "src/__init__.py": "", "src/utils/__init__.py": "", "src/data/__init__.py": "",
+        "src/models/__init__.py": "", "src/training/__init__.py": "",
+        "src/evaluation/__init__.py": "", "src/inference/__init__.py": ""
+    }
+
+    base_path.mkdir(exist_ok=True)
+    print(f"[*] Папка: {project_name}/")
+
+    for d in directories:
+        (base_path / d).mkdir(parents=True, exist_ok=True)
+
+    for file_path, content in files_content.items():
+        with open(base_path / file_path, "w", encoding="utf-8") as f:
+            f.write(content)
+
+    print("\\n✅ Проект успешно переписан под U-Net Семантическую Сегментацию!")
+
+if __name__ == "__main__":
+    create_project()
+
+============================================================
+ФАЙЛ: loss_analyzer.py
+============================================================
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from pathlib import Path
+
+def plot_loss_decomposition(csv_path="artifacts/loss_log.csv"):
+    if not Path(csv_path).exists():
+        print(f"❌ Файл {csv_path} не найден. Сначала заверши хотя бы одну эпоху обучения!")
+        return
+
+    df = pd.read_csv(csv_path)
+    
+    plt.figure(figsize=(10, 6))
+    
+    # Список компонентов
+    cols = ['focal', 'dice', 'entropy', 'area']
+    available_cols = [c for c in cols if c in df.columns]
+    
+    # Используем стандартный stackplot от matplotlib
+    plt.stackplot(df['epoch'], 
+                  [df[c] for c in available_cols], 
+                  labels=available_cols, 
+                  alpha=0.7)
+    
+    # Добавляем общую линию val_loss для наглядности
+    if 'val_loss' in df.columns:
+        plt.plot(df['epoch'], df['val_loss'], color='black', linestyle='--', label='Total Val Loss')
+
+    plt.title("Loss Decomposition: Анализ ошибок", fontsize=14)
+    plt.xlabel("Эпоха")
+    plt.ylabel("Значение штрафа")
+    plt.legend(loc='upper right')
+    plt.grid(True, linestyle=':', alpha=0.6)
+    
+    output_img = "artifacts/loss_analysis_plot.png"
+    plt.savefig(output_img)
+    print(f"📈 График построен и сохранен в {output_img}")
+    plt.show()
+
+if __name__ == "__main__":
+    plot_loss_decomposition()
+
+============================================================
+ФАЙЛ: move_to_val.py
+============================================================
+
+import os
+import random
+import shutil
+from pathlib import Path
+
+def move_train_to_val(percentage=0.10):
+    train_dir = Path("data/train")
+    val_dir = Path("data/val")
+
+    if not train_dir.exists() or not val_dir.exists():
+        print("❌ Ошибка: Папки data/train или data/val не найдены!")
+        return
+
+    # Ищем только оригинальные JSON файлы (без пометок _aug_)
+    json_files = [f for f in train_dir.glob("*.json") if "_aug_" not in f.name]
+    total_files = len(json_files)
+
+    if total_files == 0:
+        print("❌ Ошибка: В папке data/train нет оригинальных JSON файлов!")
+        return
+
+    # Считаем нужное количество (10%)
+    num_to_move = int(total_files * percentage)
+    if num_to_move == 0:
+        num_to_move = 1 # Переместим хотя бы один файл
+
+    print("="*50)
+    print(f"📊 Всего чистых файлов в train: {total_files}")
+    print(f"🚀 Планируется переместить в val: {num_to_move} ({(percentage*100):.0f}%)")
+    print("="*50)
+
+    # Выбираем случайные файлы
+    files_to_move = random.sample(json_files, num_to_move)
+
+    moved_count = 0
+    for j_path in files_to_move:
+        # Ищем парную картинку
+        img_path = None
+        for ext in ['.jpg', '.jpeg', '.png', '.bmp']:
+            if j_path.with_suffix(ext).exists():
+                img_path = j_path.with_suffix(ext)
+                break
+            elif j_path.with_suffix(ext.upper()).exists():
+                img_path = j_path.with_suffix(ext.upper())
+                break
+
+        if img_path:
+            # Перемещаем JSON
+            shutil.move(str(j_path), str(val_dir / j_path.name))
+            # Перемещаем Картинку
+            shutil.move(str(img_path), str(val_dir / img_path.name))
+            moved_count += 1
+        else:
+            print(f"⚠️ Внимание: Для {j_path.name} не найдена картинка, пропускаем.")
+
+    print(f"\n✅ Успешно перемещено {moved_count} пар (Картинка + JSON) в папку data/val!")
+
+if __name__ == "__main__":
+    move_train_to_val(0.10) # 0.10 означает 10%
+
+============================================================
+ФАЙЛ: pfai.py
+============================================================
+
+import os
+from pathlib import Path
+
+def pack_project_for_ai(output_filename="project_code_for_ai.txt"):
+    # 1. Папки, куда скрипту лезть НЕ НАДО (чтобы не зависнуть на гигабайтах данных)
+    IGNORE_DIRS = {'.venv', 'unet-env', '__pycache__', '.git', 'data', 'models', 'logs', 'checkpoints', 'artifacts'}
+    
+    # 2. Расширения файлов, которые нам нужны (только текст/код)
+    ALLOWED_EXTENSIONS = {'.py', '.yaml', '.txt', '.md', '.json'}
+
+    base_dir = Path('.')
+    
+    print("Начинаю сборку проекта...")
+    
+    with open(output_filename, 'w', encoding='utf-8') as outfile:
+        # Пишем заголовок
+        outfile.write("ОПИСАНИЕ ПРОЕКТА ДЛЯ ИИ\n")
+        outfile.write("Структура и исходный код\n\n")
+        
+        for root, dirs, files in os.walk(base_dir):
+            # Исключаем ненужные папки "на лету"
+            dirs[:] = [d for d in dirs if d not in IGNORE_DIRS]
+            
+            for file in files:
+                file_path = Path(root) / file
+                
+                # Игнорируем сам скрипт сборки
+                if file_path.name == "pack_for_ai.py":
+                    continue
+                    
+                if file_path.suffix in ALLOWED_EXTENSIONS:
+                    try:
+                        with open(file_path, 'r', encoding='utf-8') as infile:
+                            content = infile.read()
+                            
+                        # Красивый разделитель для каждого файла
+                        outfile.write(f"\n{'='*60}\n")
+                        outfile.write(f"ФАЙЛ: {file_path.relative_to(base_dir)}\n")
+                        outfile.write(f"{'='*60}\n\n")
+                        outfile.write(content)
+                        outfile.write("\n")
+                        
+                        print(f"Добавлен: {file_path.relative_to(base_dir)}")
+                    except Exception as e:
+                        print(f"⚠️ Пропущен файл {file_path} (ошибка чтения: {e})")
+
+    print(f"\n✅ Успех! Весь код аккуратно упакован в файл: {output_filename}")
+
+if __name__ == "__main__":
+    pack_project_for_ai()
+
+============================================================
+ФАЙЛ: predict.py
+============================================================
+
+import argparse
+import os
+from src.utils.config_parser import load_config
+from src.utils.logger import setup_logger
+from src.inference.predictor import Predictor
+from pathlib import Path
+
+def main():
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+    parser = argparse.ArgumentParser(description="U-Net Semantic Segmentation Inference")
+    parser.add_argument("--image", type=str, help="Path to a single image")
+    parser.add_argument("--folder", type=str, help="Path to a folder of images")
+    args = parser.parse_args()
+
+    config = load_config()
+    logger = setup_logger("PredictorLogger", Path(config["paths"]["logs_dir"]))
+
+    if not args.image and not args.folder:
+        logger.error("Please provide either --image or --folder.")
+        return
+
+    try:
+        predictor = Predictor(config, logger)
+
+        if args.image:
+            logger.info(f"Running inference on: {args.image}")
+            predictor.predict_single(args.image)
+
+        if args.folder:
+            logger.info(f"Running inference on folder: {args.folder}")
+            predictor.predict_folder(args.folder)
+
+    except Exception as e:
+        logger.exception(f"Fatal error during inference: {e}")
+
+if __name__ == "__main__":
+    main()
+
+
+============================================================
+ФАЙЛ: project_code_for_ai.txt
+============================================================
+
+ОПИСАНИЕ ПРОЕКТА ДЛЯ ИИ
+Структура и исходный код
+
+
+============================================================
+ФАЙЛ: 1.txt
+============================================================
+
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "BS_CL_intermediate",
+      "points": [
+        [
+          75.0,
+          263.0
+        ],
+        [
+          717.0,
+          430.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "..."
+    },
+    {
+      "label": "Superstructure_CL_cons_under",
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          799.0,
+          269.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "..."
+    }
+  ],
+  "imagePath": "178352548.png",
+  "imageData": "..."
+  "imageHeight": 599,
+  "imageWidth": 800
+}
+
+============================================================
+ФАЙЛ: app.py
+============================================================
+
+import streamlit as st
+import cv2
+import json
+import numpy as np
+import os
+import base64
+import yaml
+from pathlib import Path
+from tensorflow.keras.models import load_model
+
+# ==========================================
+# 1. КОНФИГУРАЦИЯ И ПУТИ
+# ==========================================
+st.set_page_config(page_title="U-Net HIL Annotation Tool", layout="wide")
+
+BASE_DIR = Path(__file__).resolve().parent
+CONFIG_PATH = BASE_DIR / "configs" / "config.yaml"
+
+@st.cache_data
+def load_project_config(path):
+    with open(path, 'r', encoding='utf-8') as f:
+        return yaml.safe_load(f)
+
+if not CONFIG_PATH.exists():
+    st.error(f"❌ Конфиг не найден: {CONFIG_PATH}")
+    st.stop()
+
+config = load_project_config(CONFIG_PATH)
+data_cfg = config.get('data', {})
+
+if 'classes' in data_cfg:
+    CLASS_NAMES = data_cfg['classes']
+elif 'classes' in config:
+    CLASS_NAMES = config['classes']
+else:
+    CLASS_NAMES = ["Background"]
+
+IMG_SIZE = tuple(data_cfg.get('image_size', (512, 512)))
+OVERLAY_ALPHA = config.get('inference', {}).get('alpha', 0.5)
+MODEL_PATH = BASE_DIR / "models" / "final_model.keras"
+
+np.random.seed(42)
+_colors_raw = np.random.randint(50, 255, size=(len(CLASS_NAMES), 3), dtype=np.uint8)
+COLORS = [tuple(map(int, c)) for c in _colors_raw]
+COLORS[0] = (0, 0, 0) 
+
+PATHS = {
+    "train": Path("data/train"),
+    "val": Path("data/val"),
+    "unlabelled": Path("data/unlabelled"),
+    "train_pl": Path("data/train_pl")
+}
+for p in PATHS.values(): p.mkdir(parents=True, exist_ok=True)
+
+# ==========================================
+# 2. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+# ==========================================
+
+@st.cache_resource
+# 💡 Добавляем show_spinner, чтобы ты видел, когда грузятся новые веса
+@st.cache_resource(show_spinner="🔄 Обнаружена новая модель! Загружаем веса...")
+def get_model(path_str, file_mod_time):
+    if not os.path.exists(path_str): return None
+    try: 
+        # Принудительно ставим политику для инференса, чтобы не было пустых тензоров
+        from tensorflow.keras import mixed_precision
+        mixed_precision.set_global_policy('mixed_float16')
+        return load_model(path_str, compile=False)
+    except Exception as e: 
+        st.error(f"Ошибка загрузки модели: {e}")
+        return None
+
+def preprocess_image(img_path, target_size):
+    img = cv2.imread(str(img_path))
+    if img is None: return None, None
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    h_orig, w_orig = img_rgb.shape[:2]
+    img_res = cv2.resize(img_rgb, target_size, interpolation=cv2.INTER_LINEAR)
+    return np.expand_dims(img_res.astype(np.float32), axis=0), (h_orig, w_orig)
+
+def postprocess_prediction(pred, orig_shape):
+    # Растягиваем вероятности плавно (INTER_CUBIC)
+    pred_resized = cv2.resize(pred[0], (orig_shape[1], orig_shape[0]), interpolation=cv2.INTER_CUBIC)
+    mask = np.argmax(pred_resized, axis=-1).astype(np.uint8)
+    
+    # 🪄 Морфологическое сглаживание (убираем пыль и дырки)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    
+    return mask
+
+def mask_to_rgb(mask, colors):
+    h, w = mask.shape
+    rgb = np.zeros((h, w, 3), dtype=np.uint8)
+    for idx in range(1, len(colors)):
+        rgb[mask == idx] = colors[idx]
+    return rgb
+
+def apply_overlay(image, mask_rgb, alpha=0.5):
+    image_bgr = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    mask_bgr = cv2.cvtColor(mask_rgb, cv2.COLOR_RGB2BGR)
+    res = cv2.addWeighted(image_bgr, 1.0, mask_bgr, alpha, 0)
+    return cv2.cvtColor(res, cv2.COLOR_BGR2RGB)
+
+def save_labelme_json(img_path, mask, class_names, output_dir):
+    img_name = img_path.name
+    output_json = output_dir / img_path.with_suffix('.json').name
+    img = cv2.imread(str(img_path))
+    h, w = img.shape[:2]
+    shapes = []
+
+    for idx in range(1, len(class_names)):
+        class_mask = (mask == idx).astype(np.uint8) * 255
+        if np.sum(class_mask) == 0: continue
+        contours, _ = cv2.findContours(class_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if contours:
+            c = max(contours, key=cv2.contourArea)
+            x, y, wb, hb = cv2.boundingRect(c)
+            local_mask = class_mask[y:y+hb, x:x+wb]
+            _, encoded = cv2.imencode('.png', local_mask)
+            shapes.append({
+                "label": class_names[idx],
+                "points": [[float(x), float(y)], [float(x+wb), float(y+hb)]],
+                "shape_type": "mask",
+                "mask": base64.b64encode(encoded).decode('utf-8')
+            })
+
+    json_data = {"version": "5.11.3", "shapes": shapes, "imagePath": img_name, "imageHeight": h, "imageWidth": w}
+    with open(output_json, 'w', encoding='utf-8') as f: json.dump(json_data, f, indent=2)
+    import shutil
+    shutil.copy2(img_path, output_dir / img_name)
+    return output_json
+
+# ==========================================
+# 3. ИНТЕРФЕЙС
+# ==========================================
+
+st.sidebar.title("💎 U-Net HIL Control")
+app_mode = st.sidebar.selectbox("Режим", ["Просмотр разметки (HIL)", "Авто-разметка новых данных"])
+
+# --- МАГИЯ АВТО-ОБНОВЛЕНИЯ КЭША ---
+if MODEL_PATH.exists():
+    mod_time = os.path.getmtime(MODEL_PATH)
+else:
+    mod_time = 0
+
+model = get_model(str(MODEL_PATH), mod_time)
+# ----------------------------------
+
+if app_mode == "Просмотр разметки (HIL)":
+    st.header("🔍 Режим Human-in-the-Loop: Сравнение")
+    
+    ds_type = st.radio("Папка:", ["train", "val"], horizontal=True)
+    folder = PATHS[ds_type]
+    json_files = list(folder.glob("*.json"))
+
+    if not json_files:
+        st.info("В папке нет JSON файлов.")
+    else:
+        selected_json = st.selectbox("Файл:", [f.name for f in json_files])
+        json_path = folder / selected_json
+        
+        pred_mask = None
+        img_path = None
+        for ext in ['.jpg', '.jpeg', '.png', '.bmp']:
+            if json_path.with_suffix(ext).exists():
+                img_path = json_path.with_suffix(ext)
+                break
+        
+        if img_path:
+            img_bgr = cv2.imread(str(img_path))
+            img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+            h_orig, w_orig = img_rgb.shape[:2]
+
+            mask_gt = np.zeros((h_orig, w_orig), dtype=np.uint8)
+            
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            cls_lower = [str(c).lower().strip() for c in CLASS_NAMES]
+            debug_logs = []
+            
+            if 'shapes' in data:
+                for sh in data['shapes']:
+                    lbl_orig = sh.get('label', '')
+                    lbl = str(lbl_orig).lower().strip()
+                    
+                    if lbl in cls_lower:
+                        idx = cls_lower.index(lbl)
+                        pts = sh.get('points', [])
+                        sType = sh.get('shape_type', '')
+                        
+                        try:
+                            pixels_drawn = 0 # Вводим счетчик реальных пикселей!
+                            
+                            if sType == 'mask' and 'mask' in sh:
+                                m_bytes = base64.b64decode(sh['mask'])
+                                # Читаем маску В ЛЮБОМ формате (даже если она цветная или с прозрачностью)
+                                m_img = cv2.imdecode(np.frombuffer(m_bytes, np.uint8), cv2.IMREAD_UNCHANGED)
+                                
+                                if m_img is not None and len(pts) >= 2:
+                                    # Если в маске несколько каналов (RGB/RGBA), сплющиваем в один
+                                    if len(m_img.shape) > 2:
+                                        m_img = np.max(m_img, axis=2)
+                                        
+                                    x = int(min(pts[0][0], pts[1][0]))
+                                    y = int(min(pts[0][1], pts[1][1]))
+                                    hm, wm = m_img.shape[:2]
+                                    
+                                    ye, xe = min(y + hm, h_orig), min(x + wm, w_orig)
+                                    x_start, y_start = max(0, x), max(0, y)
+                                    
+                                    if (ye - y_start) > 0 and (xe - x_start) > 0:
+                                        roi = mask_gt[y_start:ye, x_start:xe]
+                                        m_crop = m_img[y_start-y : ye-y, x_start-x : xe-x]
+                                        
+                                        # БЕРЕМ ВСЁ, ЧТО БОЛЬШЕ 0 (а не 127)!
+                                        valid_pixels = m_crop > 0 
+                                        roi[valid_pixels] = idx
+                                        pixels_drawn = np.sum(valid_pixels)
+                                        
+                            elif sType == 'rectangle' or len(pts) == 2:
+                                x1 = max(0, int(min(pts[0][0], pts[1][0])))
+                                y1 = max(0, int(min(pts[0][1], pts[1][1])))
+                                x2 = min(w_orig, int(max(pts[0][0], pts[1][0])))
+                                y2 = min(h_orig, int(max(pts[0][1], pts[1][1])))
+                                pixels_drawn = (x2 - x1) * (y2 - y1)
+                                if pixels_drawn > 0:
+                                    cv2.rectangle(mask_gt, (x1, y1), (x2, y2), idx, -1)
+                                
+                            elif sType == 'polygon' or len(pts) >= 3:
+                                temp = np.zeros_like(mask_gt)
+                                cv2.fillPoly(temp, [np.array(pts, np.int32)], idx)
+                                mask_gt = np.where(temp > 0, idx, mask_gt)
+                                pixels_drawn = np.sum(temp > 0)
+                            
+                            # Честный отчет в дебаг-панель
+                            if pixels_drawn > 0:
+                                debug_logs.append(f"✅ Нарисовано: {lbl_orig} ({sType}) -> {pixels_drawn} пикселей")
+                            else:
+                                debug_logs.append(f"⚠️ Пусто: {lbl_orig} найден, но внутри 0 пикселей!")
+                                
+                        except Exception as e:
+                            debug_logs.append(f"❌ Ошибка кода при отрисовке {lbl_orig}: {e}")
+                    else:
+                        debug_logs.append(f"❌ Пропущено: {lbl_orig} (Нет в конфиге)")
+
+            
+            with st.expander("🛠 Дебаг-панель", expanded=False):
+                for log in debug_logs: st.write(log)
+
+            # --- Предсказание нейросети ---
+            if model:
+                inp, shp = preprocess_image(img_path, IMG_SIZE)
+                if inp is not None:
+                    res = model.predict(inp, verbose=0)
+                    pred_mask = postprocess_prediction(res, shp)
+
+            # --- Отрисовка Общего вида ---
+            st.subheader("📊 Общий вид")
+            c1, c2, c3 = st.columns(3)
+            c1.image(img_rgb, caption="Оригинал", use_container_width=True)
+            
+            m_gt_rgb = mask_to_rgb(mask_gt, COLORS)
+            c2.image(apply_overlay(img_rgb, m_gt_rgb, OVERLAY_ALPHA), caption="Разметка человека", use_container_width=True)
+            
+            if pred_mask is not None:
+                m_pred_rgb = mask_to_rgb(pred_mask, COLORS)
+                c3.image(apply_overlay(img_rgb, m_pred_rgb, OVERLAY_ALPHA), caption="Нейросеть", use_container_width=True)
+
+            # --- Детальный разбор ---
+            st.markdown("---")
+            st.subheader("🧩 Детально по НАЙДЕННЫМ классам")
+            
+            drawn_any = False
+            for i in range(1, len(CLASS_NAMES)):
+                in_gt = np.any(mask_gt == i)
+                in_pred = pred_mask is not None and np.any(pred_mask == i)
+                
+                # Показываем только если класс ЕСТЬ в разметке или предсказании
+                if in_gt or in_pred:
+                    drawn_any = True
+                    st.markdown(f"**Класс: {CLASS_NAMES[i]}**")
+                    l, r = st.columns(2)
+                    
+                    if in_gt:
+                        single_gt = np.zeros_like(mask_gt)
+                        single_gt[mask_gt == i] = i
+                        single_rgb_gt = mask_to_rgb(single_gt, COLORS)
+                        # Накладываем НА ОРИГИНАЛЬНОЕ ФОТО
+                        l.image(apply_overlay(img_rgb, single_rgb_gt, OVERLAY_ALPHA), caption=f"Эталон: {CLASS_NAMES[i]}", use_container_width=True)
+                    else:
+                        l.info("Отсутствует в ручной разметке")
+                    
+                    if in_pred:
+                        single_pred = np.zeros_like(mask_gt)
+                        single_pred[pred_mask == i] = i
+                        single_rgb_pred = mask_to_rgb(single_pred, COLORS)
+                        # Накладываем НА ОРИГИНАЛЬНОЕ ФОТО
+                        r.image(apply_overlay(img_rgb, single_rgb_pred, OVERLAY_ALPHA), caption=f"Нейросеть: {CLASS_NAMES[i]}", use_container_width=True)
+                    else:
+                        r.info("Нейросеть не обнаружила")
+
+            if not drawn_any:
+                st.warning("На этом фото нет ни одного объекта из списка классов (только фон).")
+
+elif app_mode == "Авто-разметка новых данных":
+    # (Оставляем вкладку авто-разметки как была)
+    st.header("🔮 Автоматическая разметка")
+    # ...
+    st.info("Переключитесь на вкладку HIL, чтобы проверить разметку.")
+
+============================================================
+ФАЙЛ: augment_data.py
+============================================================
+
+import cv2
+import json
+import numpy as np
+import base64
+from pathlib import Path
+import random
+import uuid
+import sys
+import os
+
+# ==========================================
+# КОНФИГУРАЦИЯ
+# ==========================================
+TARGET_SIZE = (512, 512)
+
+# ==========================================
+# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (ДЛЯ МАСОК)
+# ==========================================
+def decode_mask(b64_str):
+    try:
+        mask_bytes = base64.b64decode(b64_str)
+        mask_img = cv2.imdecode(np.frombuffer(mask_bytes, np.uint8), cv2.IMREAD_UNCHANGED)
+        if mask_img is not None and len(mask_img.shape) > 2:
+            mask_img = np.max(mask_img, axis=2)
+        return mask_img
+    except: return None
+
+def encode_mask(mask_img):
+    if len(mask_img.shape) > 2: mask_img = np.max(mask_img, axis=2)
+    _, encoded = cv2.imencode('.png', mask_img)
+    return base64.b64encode(encoded).decode('utf-8')
+
+def get_full_mask(shape, h, w):
+    full_m = np.zeros((h, w), dtype=np.uint8)
+    if shape.get('shape_type') == 'mask' and 'mask' in shape:
+        m = decode_mask(shape['mask'])
+        if m is not None:
+            pts = shape['points']
+            mx = int(min(pts[0][0], pts[1][0]))
+            my = int(min(pts[0][1], pts[1][1]))
+            mh, mw = m.shape[:2]
+            ye, xe = min(my + mh, h), min(mx + mw, w)
+            my_start, mx_start = max(0, my), max(0, mx)
+            if (ye - my_start) > 0 and (xe - mx_start) > 0:
+                full_m[my_start:ye, mx_start:xe] = m[my_start-my:ye-my, mx_start-mx:xe-mx]
+    return full_m
+
+def extract_local_mask(full_m):
+    contours, _ = cv2.findContours((full_m > 0).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not contours: return None, None
+    c = max(contours, key=cv2.contourArea)
+    x, y, w_bbox, h_bbox = cv2.boundingRect(c)
+    local_m = full_m[y:y+h_bbox, x:x+w_bbox]
+    pts = [[float(x), float(y)], [float(x+w_bbox), float(y+h_bbox)]]
+    return local_m, pts
+
+def save_augmentation(orig_img_path, new_img, new_data, suffix):
+    unique_id = uuid.uuid4().hex[:4]
+    new_img_name = f"{orig_img_path.stem}_{suffix}_{unique_id}{orig_img_path.suffix}"
+    # Сохраняем в ТУ ЖЕ папку, где лежал оригинал (train или val)
+    new_img_path = orig_img_path.parent / new_img_name
+    new_data['imagePath'] = new_img_name
+    new_data['imageData'] = None
+    cv2.imwrite(str(new_img_path), new_img)
+    with open(new_img_path.with_suffix('.json'), 'w', encoding='utf-8') as f:
+        json.dump(new_data, f, indent=2)
+
+# ==========================================
+# МОДУЛИ АУГМЕНТАЦИИ
+# ==========================================
+def augment_flip(img, data):
+    h, w = img.shape[:2]
+    new_img = cv2.flip(img, 1)
+    new_data = json.loads(json.dumps(data))
+    valid_shapes = []
+    for s in new_data.get('shapes', []):
+        if s.get('shape_type') == 'mask' and 'mask' in s:
+            full_m = get_full_mask(s, h, w)
+            flipped_full_m = cv2.flip(full_m, 1)
+            local_m, new_pts = extract_local_mask(flipped_full_m)
+            if local_m is not None:
+                s['mask'] = encode_mask(local_m)
+                s['points'] = new_pts
+                valid_shapes.append(s)
+        else:
+            s['points'] = [[w - p[0], p[1]] for p in s['points']]
+            valid_shapes.append(s)
+    new_data['shapes'] = valid_shapes
+    return new_img, new_data, "aug_flip"
+
+def augment_crop(img, data):
+    h, w = img.shape[:2]
+    all_pts = [p for s in data.get('shapes', []) for p in s['points']]
+    if not all_pts: return None, None, None
+    tp = random.choice(all_pts)
+    cw, ch = int(w * random.uniform(0.4, 0.7)), int(h * random.uniform(0.4, 0.7))
+    x1, y1 = int(max(0, min(tp[0]-cw//2, w-cw))), int(max(0, min(tp[1]-ch//2, h-ch)))
+    x2, y2 = x1 + cw, y1 + ch
+    new_img = cv2.resize(img[y1:y2, x1:x2], TARGET_SIZE)
+    new_data = json.loads(json.dumps(data))
+    valid_shapes = []
+    for s in new_data.get('shapes', []):
+        if s.get('shape_type') == 'mask' and 'mask' in s:
+            full_m = get_full_mask(s, h, w)
+            cropped_m = full_m[y1:y2, x1:x2]
+            cm = cv2.resize(cropped_m, TARGET_SIZE, interpolation=cv2.INTER_NEAREST)
+            local_m, new_pts = extract_local_mask(cm)
+            if local_m is not None:
+                s['mask'] = encode_mask(local_m)
+                s['points'] = new_pts
+                valid_shapes.append(s)
+        else:
+            np_pts = (np.array(s['points']) - [x1, y1]) * [TARGET_SIZE[0]/cw, TARGET_SIZE[1]/ch]
+            if np.any((np_pts[:, 0] >= 0) & (np_pts[:, 0] <= TARGET_SIZE[0]) & 
+                      (np_pts[:, 1] >= 0) & (np_pts[:, 1] <= TARGET_SIZE[1])):
+                s['points'] = np_pts.tolist()
+                valid_shapes.append(s)
+    if not valid_shapes: return None, None, None
+    new_data['shapes'] = valid_shapes
+    return new_img, new_data, "aug_crop"
+
+def augment_color(img, data):
+    new_img = cv2.convertScaleAbs(img, alpha=random.uniform(0.8, 1.2), beta=random.randint(-30, 30))
+    return new_img, json.loads(json.dumps(data)), "aug_color"
+
+def augment_noise_blur(img, data):
+    new_img = img.copy()
+    # С вероятностью 50% делаем либо размытие, либо шум
+    if random.random() > 0.5:
+        # Гауссовское размытие (эффект скорости / расфокуса)
+        k = random.choice([3, 5, 7])
+        new_img = cv2.GaussianBlur(new_img, (k, k), 0)
+    else:
+        # Гауссовский шум (эффект дешевой камеры / ночи)
+        noise = np.random.normal(0, 15, new_img.shape).astype(np.uint8)
+        new_img = cv2.add(new_img, noise)
+        
+    # Данные масок не меняются, геометрия осталась прежней!
+    return new_img, json.loads(json.dumps(data)), "aug_noise"
+
+def augment_cutout(img, data):
+    new_img = img.copy()
+    h, w = new_img.shape[:2]
+    
+    # Добавляем от 1 до 4 черных "заплаток"
+    for _ in range(random.randint(1, 4)):
+        # Размер заплатки от 5% до 15% экрана
+        box_h = int(h * random.uniform(0.05, 0.15))
+        box_w = int(w * random.uniform(0.05, 0.15))
+        
+        x = random.randint(0, w - box_w)
+        y = random.randint(0, h - box_h)
+        
+        # Закрашиваем черным
+        new_img[y:y+box_h, x:x+box_w] = (0, 0, 0)
+        
+    # Данные масок остаются! Сеть будет вынуждена догадываться о скрытом объекте
+    return new_img, json.loads(json.dumps(data)), "aug_cutout"
+
+# ==========================================
+# ГЛАВНЫЙ ЗАПУСК (КАСКАДНАЯ ЛОГИКА)
+# ==========================================
+def main():
+    print("\n" + "="*50, flush=True)
+    print("🛠 СКРИПТ АУГМЕНТАЦИИ [TRAIN & VAL]", flush=True)
+    print("="*50 + "\n", flush=True)
+
+    # 1. ВЫБОР ПАПКИ
+    print("📁 Выберите папки для обработки:")
+    print("  1. Только data/train (Для обучения)")
+    print("  2. Только data/val   (Для валидации)")
+    print("  3. Обе папки         (train + val)")
+    
+    if len(sys.argv) > 2: # Если передано аргументами, например: python script.py 3 1
+        folder_choice = sys.argv[2]
+    else:
+        print("\n⌨️ Ваш выбор папок (по умолчанию 1): ", end='', flush=True)
+        folder_choice = sys.stdin.readline().strip()
+
+    target_dirs = []
+    if folder_choice == '2':
+        target_dirs.append(Path("data/val"))
+    elif folder_choice == '3':
+        target_dirs.append(Path("data/train"))
+        target_dirs.append(Path("data/val"))
+    else:
+        target_dirs.append(Path("data/train"))
+
+    for d in target_dirs:
+        if not d.exists():
+            print(f"❌ Ошибка: Папка {d} не найдена!", flush=True)
+            return
+
+    # 2. ВЫБОР МЕТОДА
+    print("\n🛠 Выберите методы (номера через запятую, например: 1,2,4):")
+    print("  1. 🪞 Горизонтальное отражение (Flip)")
+    print("  2. ☀️ Яркость/Контраст (Color)")
+    print("  3. ✂️ Умная случайная обрезка (Smart Crop - ОСТОРОЖНО!)")
+    print("  4. 🌫️ Шум и Размытие (Blur & Noise - ТОП ДЛЯ ФОРМ)")
+    print("  5. ⬛ Перекрытия (Cutout - ПРОТИВ ПЕРЕОБУЧЕНИЯ)")
+    print("  9. 🗑  УДАЛИТЬ ВСЕ АУГМЕНТАЦИИ из выбранных папок")
+    print("  0. Выход")
+    
+    if len(sys.argv) > 1:
+        choice = sys.argv[1]
+    else:
+        print("\n⌨️ Ваш выбор методов: ", end='', flush=True)
+        choice = sys.stdin.readline().strip()
+
+    if not choice or '0' in choice:
+        print("❌ Выход.", flush=True)
+        return
+
+    # 3. ОЧИСТКА
+    if '9' in choice:
+        del_count = 0
+        for d in target_dirs:
+            for f in d.glob("*_aug_*"):
+                os.remove(f)
+                del_count += 1
+        print(f"🧹 Очистка завершена! Удалено файлов: {del_count}", flush=True)
+        return
+
+    mods = []
+    if '1' in choice: mods.append((augment_flip, "aug_flip", "Отражение"))
+    if '2' in choice: mods.append((augment_color, "aug_color", "Цвет"))
+    if '3' in choice: mods.append((augment_crop, "aug_crop", "Обрезка"))
+    if '4' in choice: mods.append((augment_noise_blur, "aug_noise", "Шум/Размытие"))
+    if '5' in choice: mods.append((augment_cutout, "aug_cutout", "Перекрытия"))
+
+    total_generated = 0
+
+    # 4. ВЫПОЛНЕНИЕ ДЛЯ КАЖДОЙ ПАПКИ
+    for current_dir in target_dirs:
+        print("\n" + "="*50, flush=True)
+        print(f"🚀 ЗАПУСК В ПАПКЕ: {current_dir}", flush=True)
+        print("="*50, flush=True)
+
+        for m_func, sfx_name, ru_name in mods:
+            print(f"\n▶️ ЭТАП: {ru_name}...", flush=True)
+            
+            current_files = list(current_dir.glob("*.json"))
+            files_to_process = [f for f in current_files if sfx_name not in f.name]
+            
+            print(f"   Файлов в очереди на обработку: {len(files_to_process)}", flush=True)
+            
+            step_count = 0
+            for j_path in files_to_process:
+                img_path = next((j_path.with_suffix(ext) for ext in ['.jpg','.png','.jpeg'] if j_path.with_suffix(ext).exists()), None)
+                if not img_path: continue
+                
+                img = cv2.imread(str(img_path))
+                with open(j_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    
+                ni, nd, sfx = m_func(img, data)
+                if ni is not None:
+                    save_augmentation(img_path, ni, nd, sfx)
+                    step_count += 1
+                    total_generated += 1
+                    
+            print(f"   ✅ Создано файлов на этом этапе: {step_count}", flush=True)
+
+    print("\n" + "="*50, flush=True)
+    print(f"🎉 СЕССИЯ ЗАВЕРШЕНА! Всего сгенерировано новых файлов: {total_generated}", flush=True)
+    print("="*50 + "\n", flush=True)
+
+if __name__ == "__main__":
+    main()
+
+============================================================
+ФАЙЛ: Boot.py
+============================================================
+
+wsl
+source ~/unet-env/bin/activate
+streamlit run app.py
+python train.py
+python diag_scr.py
+python augment_data.py
+
+============================================================
+ФАЙЛ: check_gpu.py
+============================================================
+
+import tensorflow as tf
+print("Devices:", tf.config.list_physical_devices('GPU'))
+
+
+============================================================
+ФАЙЛ: diag_scr.py
+============================================================
+
+import os
+import random
+import json
+import base64
+import yaml
+from pathlib import Path
+import cv2
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras import mixed_precision
+
+# ==========================================
+# 🚀 1. ИНИЦИАЛИЗАЦИЯ И СЕТАП ЖЕЛЕЗА
+# ==========================================
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+def setup_hardware():
+    """Memory Growth и Mixed Precision"""
+    gpus = tf.config.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus: tf.config.experimental.set_memory_growth(gpu, True)
+            print("✅ Memory Growth включен.")
+        except: pass
+    
+    # Включаем Mixed Precision, чтобы диагност читал модель корректно
+    mixed_precision.set_global_policy('mixed_float16')
+    print("⚡ Mixed Precision включен.")
+
+# ==========================================
+# 🧬 2. ВСПОМОГАТЕЛЬНАЯ МАТЕМАТИКА (dataset.py)
+# ==========================================
+def decode_mask(b64_str):
+    try:
+        mask_bytes = base64.b64decode(b64_str)
+        m_img = cv2.imdecode(np.frombuffer(mask_bytes, np.uint8), cv2.IMREAD_UNCHANGED)
+        if m_img is not None and len(m_img.shape) > 2: m_img = np.max(m_img, axis=2)
+        return m_img
+    except: return None
+
+def mask_to_rgb(mask, colors):
+    h, w = mask.shape
+    rgb = np.zeros((h, w, 3), dtype=np.uint8)
+    for idx in range(1, len(colors)): rgb[mask == idx] = colors[idx]
+    return rgb
+
+# ==========================================
+# 🛠 3. ГЛАВНЫЙ ЦИКЛ ДИАГНОСТИКИ
+# ==========================================
+def main():
+    setup_hardware()
+    
+    # Загрузка конфига
+    with open("configs/config.yaml", "r", encoding="utf-8") as f: config = yaml.safe_load(f)
+    VAL_DIR = Path("data/val")
+    MODEL_PATH = Path("models/final_model.keras")
+    OUTPUT_PATH = Path("artifacts/diagnostics.png")
+    IMG_SIZE = tuple(config["data"]["image_size"])
+    CLASS_NAMES = config['data']['classes']
+
+    if not MODEL_PATH.exists():
+        print(f"❌ Ошибка: Модель не найдена по пути {MODEL_PATH}")
+        return
+
+    # Генерация цветов (фон=черный, остальные - яркие)
+    np.random.seed(42)
+    COLORS = np.random.randint(50, 255, size=(len(CLASS_NAMES), 3), dtype=np.uint8)
+    COLORS[0] = (0, 0, 0)
+    
+    # Загрузка модели (БЕЗ компиляции, нам только предсказания)
+    print("🌀 Загрузка модели...")
+    model = tf.keras.models.load_model(str(MODEL_PATH), compile=False)
+    
+    # Сбор и выбор файлов
+    json_files = list(VAL_DIR.glob("*.json"))
+    # Игнорируем аугментации, если они есть в val
+    json_files = [f for f in json_files if "_aug_" not in f.name]
+    
+    if len(json_files) < 5:
+        print(f"❌ Ошибка: В data/val меньше 5 оригинальных файлов ({len(json_files)})")
+        return
+    
+    selected_jsons = random.sample(json_files, 5)
+    
+    grid_rows = []
+    
+    # Стандартизируем размер для вывода на панель (например, 320x320)
+    DISPLAY_SIZE = (320, 320)
+    
+    print("\n🔬 Начинаю анализ 5 образцов...")
+    for j_path in selected_jsons:
+        # Ищем картинку
+        img_path = None
+        for ext in ['.jpg','.jpeg','.png','.bmp']:
+            if j_path.with_suffix(ext).exists():
+                img_path = j_path.with_suffix(ext)
+                break
+        if not img_path: continue
+        
+        # --- 1. ОРИГИНАЛ ---
+        img_bgr = cv2.imread(str(img_path))
+        orig_h, orig_w = img_bgr.shape[:2]
+        
+        # --- 2. ЭТАЛОН (GT) ---
+        mask_gt = np.zeros((orig_h, orig_w), dtype=np.uint8)
+        with open(j_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            if 'shapes' in data:
+                for shape in data['shapes']:
+                    label = shape.get('label', '')
+                    if label in CLASS_NAMES:
+                        idx = CLASS_NAMES.index(label)
+                        pts = shape.get('points', [])
+                        sType = shape.get('shape_type', '')
+                        try:
+                            if sType == 'mask' and 'mask' in shape:
+                                m_img = decode_mask(shape['mask'])
+                                if m_img is not None and len(pts) >= 2:
+                                    x, y = int(min(pts[0][0], pts[1][0])), int(min(pts[0][1], pts[1][1]))
+                                    hm, wm = m_img.shape[:2]
+                                    ye, xe = min(y + hm, orig_h), min(x + wm, orig_w)
+                                    roi, m_crop = mask_gt[max(0, y):ye, max(0, x):xe], m_img[max(0, y)-y:ye-y, max(0, x)-x:xe-x]
+                                    roi[m_crop > 0] = idx
+                            elif sType == 'rectangle' or len(pts) == 2:
+                                cv2.rectangle(mask_gt, (int(pts[0][0]), int(pts[0][1])), (int(pts[1][0]), int(pts[1][1])), idx, -1)
+                            elif sType == 'polygon' or len(pts) >= 3:
+                                cv2.fillPoly(mask_gt, [np.array(pts, np.int32)], idx)
+                        except: pass
+        
+        # --- 3. ПРЕДСКАЗАНИЕ (PRED) ---
+        # Подготовка тензора
+        img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+        inp = cv2.resize(img_rgb, IMG_SIZE, interpolation=cv2.INTER_LINEAR)
+        inp = np.expand_dims(inp.astype(np.float32), axis=0)
+        
+        # Инференс и postprocess
+        pred_probs = model.predict(inp, verbose=0)[0]
+        pred_mask = np.argmax(pred_probs, axis=-1).astype(np.uint8)
+        
+        # Обязательно возвращаем маску к оригинальному размеру для честного сравнения!
+        pred_mask = cv2.resize(pred_mask, (orig_w, orig_h), interpolation=cv2.INTER_NEAREST)
+        
+        # --- 4. ОЦЕНКА ОШИБОК ПОД МИКРОСКОПОМ (СТРОГАЯ ПРОВЕРКА) ---
+        # Где реально есть объекты (не фон)
+        gt_objects_mask = (mask_gt > 0)
+        total_gt_pixels = np.sum(gt_objects_mask)
+        
+        # Где сеть угадала ИМЕННО ПРАВИЛЬНЫЙ КЛАСС (И это не фон)
+        correct_pixels_mask = (pred_mask == mask_gt) & gt_objects_mask
+        correct_pixels = np.sum(correct_pixels_mask)
+        
+        # Считаем процент именно ВЕРНЫХ совпадений
+        if total_gt_pixels > 0:
+            true_accuracy = (correct_pixels / total_gt_pixels) * 100
+            
+            if true_accuracy > 50:
+                match = f"✅ Точное попадание: {true_accuracy:.1f}%"
+            elif true_accuracy > 10:
+                match = f"⚠️ Частичное совпадение: {true_accuracy:.1f}%"
+            else:
+                match = f"❌ Промах (Не тот класс): {true_accuracy:.1f}%"
+        else:
+            # Если на картинке вообще нет объектов (только фон)
+            if np.sum(pred_mask > 0) > 0:
+                match = "❌ Галлюцинация (Нарисовала объект на фоне)"
+            else:
+                match = "✅ Идеально чистый фон"
+
+        # --- 5. КОМПОНОВКА ПАНЕЛИ ---
+        p1 = cv2.resize(img_bgr, DISPLAY_SIZE)
+        
+        # Красим маски в BGR для сохранения в файл
+        m_gt_rgb = mask_to_rgb(mask_gt, COLORS)
+        m_gt_bgr = cv2.cvtColor(m_gt_rgb, cv2.COLOR_RGB2BGR)
+        p2 = cv2.resize(m_gt_bgr, DISPLAY_SIZE, interpolation=cv2.INTER_NEAREST)
+        
+        m_pred_rgb = mask_to_rgb(pred_mask, COLORS)
+        m_pred_bgr = cv2.cvtColor(m_pred_rgb, cv2.COLOR_RGB2BGR)
+        p3 = cv2.resize(m_pred_bgr, DISPLAY_SIZE, interpolation=cv2.INTER_NEAREST)
+        
+        # Добавляем текстовый отчет на панель (с фоном для читаемости)
+        cv2.rectangle(p3, (0, DISPLAY_SIZE[1]-25), (DISPLAY_SIZE[0], DISPLAY_SIZE[1]), (0,0,0), -1)
+        cv2.putText(p3, match, (10, DISPLAY_SIZE[1]-8), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
+
+        row = np.hstack([p1, p2, p3])
+        grid_rows.append(row)
+        print(f"   Обработан файл {j_path.name}: {match}")
+
+    # Финальная склейка и сохранение
+    print("\n✅ Компоновка диагностической панели...")
+    final_grid = np.vstack(grid_rows)
+    # Добавляем заголовки
+    header = np.zeros((50, final_grid.shape[1], 3), dtype=np.uint8)
+    w_p = DISPLAY_SIZE[0]
+    cv2.putText(header, "Original Image", (10, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+    cv2.putText(header, "Your Annotation (GT)", (w_p + 10, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+    cv2.putText(header, "Network Prediction (Pred)", (w_p*2 + 10, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+    
+    final_output = np.vstack([header, final_grid])
+    cv2.imwrite(str(OUTPUT_PATH), final_output)
+    print(f"🎉 Готово! Строгая диагностика сохранена в: {OUTPUT_PATH}")
+
+if __name__ == "__main__":
+    main()
+
+============================================================
+ФАЙЛ: find_classes.py
+============================================================
+
+import json
+from pathlib import Path
+
+def find_all_classes():
+    unique_classes = set()
+    
+    # Ищем во всех папках
+    for split in ['train', 'val']:
+        folder = Path(f"data/{split}")
+        if folder.exists():
+            for j_path in folder.glob("*.json"):
+                with open(j_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    if 'shapes' in data:
+                        for shape in data['shapes']:
+                            label = shape.get('label', '')
+                            # Добавляем только если это не пустая строка
+                            if label: 
+                                unique_classes.add(label)
+    
+    # Сортируем по алфавиту и добавляем Background первым
+    final_list = ["Background"] + sorted(list(unique_classes))
+    
+    print("\n" + "="*50)
+    print("✅ ГОТОВО! Скопируй строчку ниже и вставь в configs/config.yaml:")
+    print("="*50 + "\n")
+    # Красиво печатаем в формате YAML
+    print(f"classes: {final_list}\n")
+
+if __name__ == "__main__":
+    find_all_classes()
+
+============================================================
+ФАЙЛ: gen.py
+============================================================
+
+import os
+from pathlib import Path
+
+def create_project():
+    project_name = "image_classification_project" # Оставим имя папки прежним для совместимости
+    base_path = Path(project_name)
+
+    directories = [
+        "configs", "data/train", "data/val", "models", "logs", 
+        "artifacts", "checkpoints", "src/utils", "src/data", 
+        "src/models", "src/training", "src/evaluation", "src/inference"
+    ]
+
+    files_content = {
+        "requirements.txt": """tensorflow==2.15.0
+keras==2.15.0
+PyYAML==6.0.1
+scikit-learn==1.4.0
+matplotlib==3.8.2
+pandas==2.2.0
+numpy==1.26.3
+opencv-python==4.9.0.80
+""",
+
+        "configs/config.yaml": """project:
+  name: "unet_segmentation_v1"
+  seed: 42
+
+paths:
+  data_dir: "data"
+  models_dir: "models"
+  logs_dir: "logs"
+  artifacts_dir: "artifacts"
+  checkpoints_dir: "checkpoints"
+
+data:
+  image_size: [224, 224] # Разрешение должно быть кратно 16 для U-Net
+  batch_size: 16         # Уменьшен батч-сайз, сегментация ест больше памяти
+  use_augmentation: false # Для генератора отключим сложные аугментации для стабильности
+  cache: false
+
+model:
+  type: "unet"
+  learning_rate: 0.001
+
+training:
+  epochs: 30
+  early_stopping_patience: 7
+  reduce_lr_patience: 3
+  reduce_lr_factor: 0.5
+
+inference:
+  alpha: 0.5 # Прозрачность наложения маски (0 до 1)
+""",
+
+        "src/utils/logger.py": """import logging
+import sys
+from pathlib import Path
+
+def setup_logger(name: str, log_dir: Path) -> logging.Logger:
+    logger = logging.getLogger(name)
+    if logger.hasHandlers(): return logger
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    log_file = log_dir / "project.log"
+    fh = logging.FileHandler(log_file, encoding='utf-8')
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+    return logger
+""",
+
+        "src/utils/config_parser.py": """import yaml
+from pathlib import Path
+
+def load_config(config_path: str = "configs/config.yaml") -> dict:
+    root_dir = Path(__file__).resolve().parents[2]
+    full_config_path = root_dir / config_path
+    if not full_config_path.exists(): raise FileNotFoundError(f"Config not found: {full_config_path}")
+    with open(full_config_path, "r", encoding="utf-8") as f: config = yaml.safe_load(f)
+    paths = config.get("paths", {})
+    for key, folder in paths.items():
+        if key != "data_dir":
+            dir_path = root_dir / folder
+            dir_path.mkdir(parents=True, exist_ok=True)
+            config["paths"][key] = str(dir_path)
+    config["paths"]["data_dir"] = str(root_dir / paths.get("data_dir", "data"))
+    config["root_dir"] = str(root_dir)
+    return config
+""",
+
+        # Генератор масок из JSON полигонов
+        "src/data/dataset.py": """import tensorflow as tf
+import numpy as np
+import cv2
+from pathlib import Path
+import json
+import logging
+
+class DataPipeline:
+    def __init__(self, config: dict, logger: logging.Logger):
+        self.config = config
+        self.logger = logger
+        self.data_dir = Path(config["paths"]["data_dir"])
+        self.train_dir = self.data_dir / "train"
+        self.val_dir = self.data_dir / "val"
+        self.img_size = tuple(config["data"]["image_size"])
+        self.batch_size = config["data"]["batch_size"]
+        
+        self.class_names = ["background"] # Индекс 0 всегда фон
+        self.num_classes = 1
+
+    def _find_image_for_json(self, json_path: Path):
+        for ext in ['.jpg', '.jpeg', '.png', '.bmp']:
+            img_path = json_path.with_suffix(ext)
+            if img_path.exists(): return img_path
+            img_path = json_path.with_suffix(ext.upper())
+            if img_path.exists(): return img_path
+        return None
+
+    def _scan_classes(self):
+        self.logger.info("Scanning for unique classes in JSON files...")
+        classes = set()
+        for j_path in list(self.train_dir.glob("*.json")) + list(self.val_dir.glob("*.json")):
+            with open(j_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if 'shapes' in data: # Формат LabelMe
+                    for shape in data['shapes']: classes.add(shape.get('label', ''))
+        
+        self.class_names.extend(sorted(list(classes)))
+        self.num_classes = len(self.class_names)
+        self.logger.info(f"Classes found ({self.num_classes}): {self.class_names}")
+        self._save_class_names()
+
+    def _data_generator(self, dir_path):
+        json_files = list(Path(dir_path).glob("*.json"))
+        
+        def generator():
+            for j_path in json_files:
+                img_path = self._find_image_for_json(j_path)
+                if not img_path: continue
+                
+                # Читаем картинку
+                img = cv2.imread(str(img_path))
+                if img is None: continue
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                orig_h, orig_w = img.shape[:2]
+                
+                # Создаем пустую маску фона (нули)
+                mask = np.zeros((orig_h, orig_w), dtype=np.uint8)
+                
+                # Парсим полигоны и рисуем маску
+                with open(j_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    if 'shapes' in data:
+                        for shape in data['shapes']:
+                            label = shape.get('label', '')
+                            if label in self.class_names:
+                                class_idx = self.class_names.index(label)
+                                points = np.array(shape.get('points', []), dtype=np.int32)
+                                if len(points) >= 3:
+                                    cv2.fillPoly(mask, [points], class_idx)
+                
+                # Ресайз
+                img = cv2.resize(img, self.img_size, interpolation=cv2.INTER_LINEAR)
+                # Маску ресайзим с INTER_NEAREST, чтобы индексы классов не смешались в дроби!
+                mask = cv2.resize(mask, self.img_size, interpolation=cv2.INTER_NEAREST)
+                
+                img = img.astype(np.float32)
+                mask = np.expand_dims(mask, axis=-1).astype(np.int32)
+                
+                yield img, mask
+        
+        return generator
+
+    def create_datasets(self):
+        self._scan_classes()
+
+        output_signature = (
+            tf.TensorSpec(shape=(self.img_size[1], self.img_size[0], 3), dtype=tf.float32),
+            tf.TensorSpec(shape=(self.img_size[1], self.img_size[0], 1), dtype=tf.int32)
+        )
+
+        train_ds = tf.data.Dataset.from_generator(
+            self._data_generator(self.train_dir), output_signature=output_signature
+        )
+        val_ds = tf.data.Dataset.from_generator(
+            self._data_generator(self.val_dir), output_signature=output_signature
+        )
+
+        train_ds = train_ds.shuffle(100).batch(self.batch_size).prefetch(tf.data.AUTOTUNE)
+        val_ds = val_ds.batch(self.batch_size).prefetch(tf.data.AUTOTUNE)
+
+        return train_ds, val_ds, self.num_classes
+
+    def _save_class_names(self):
+        artifacts_dir = Path(self.config["paths"]["artifacts_dir"])
+        mapping_path = artifacts_dir / "label_map.json"
+        mapping = {i: name for i, name in enumerate(self.class_names)}
+        with open(mapping_path, "w", encoding="utf-8") as f:
+            json.dump(mapping, f, indent=4)
+        self.logger.info(f"Class mapping saved to {mapping_path}")
+""",
+
+        # Чистая архитектура U-Net
+        "src/models/model_builder.py": """import tensorflow as tf
+from tensorflow.keras import layers, models
+import logging
+
+class ModelBuilder:
+    def __init__(self, config: dict, num_classes: int, logger: logging.Logger):
+        self.config = config
+        self.num_classes = num_classes
+        self.logger = logger
+        self.img_size = tuple(config["data"]["image_size"]) + (3,)
+
+    def build(self) -> tf.keras.Model:
+        self.logger.info("Building U-Net Semantic Segmentation model...")
+        
+        inputs = layers.Input(shape=self.img_size)
+        x = layers.Rescaling(1./255)(inputs)
+
+        # --- Encoder (Downsampling) ---
+        c1 = layers.Conv2D(32, 3, activation='relu', padding='same')(x)
+        c1 = layers.Conv2D(32, 3, activation='relu', padding='same')(c1)
+        p1 = layers.MaxPooling2D(2)(c1)
+
+        c2 = layers.Conv2D(64, 3, activation='relu', padding='same')(p1)
+        c2 = layers.Conv2D(64, 3, activation='relu', padding='same')(c2)
+        p2 = layers.MaxPooling2D(2)(c2)
+
+        c3 = layers.Conv2D(128, 3, activation='relu', padding='same')(p2)
+        c3 = layers.Conv2D(128, 3, activation='relu', padding='same')(c3)
+        p3 = layers.MaxPooling2D(2)(c3)
+
+        # --- Bottleneck ---
+        b = layers.Conv2D(256, 3, activation='relu', padding='same')(p3)
+        b = layers.Conv2D(256, 3, activation='relu', padding='same')(b)
+
+        # --- Decoder (Upsampling & Skip Connections) ---
+        u1 = layers.UpSampling2D(2)(b)
+        u1 = layers.Concatenate()([u1, c3])
+        c4 = layers.Conv2D(128, 3, activation='relu', padding='same')(u1)
+        c4 = layers.Conv2D(128, 3, activation='relu', padding='same')(c4)
+
+        u2 = layers.UpSampling2D(2)(c4)
+        u2 = layers.Concatenate()([u2, c2])
+        c5 = layers.Conv2D(64, 3, activation='relu', padding='same')(u2)
+        c5 = layers.Conv2D(64, 3, activation='relu', padding='same')(c5)
+
+        u3 = layers.UpSampling2D(2)(c5)
+        u3 = layers.Concatenate()([u3, c1])
+        c6 = layers.Conv2D(32, 3, activation='relu', padding='same')(u3)
+        c6 = layers.Conv2D(32, 3, activation='relu', padding='same')(c6)
+
+        # --- Output ---
+        # Для многоклассовой сегментации используем softmax на каждый пиксель
+        outputs = layers.Conv2D(self.num_classes, 1, activation='softmax')(c6)
+
+        model = models.Model(inputs, outputs)
+        
+        optimizer = tf.keras.optimizers.Adam(learning_rate=self.config["model"]["learning_rate"])
+        
+        # sparse_categorical_crossentropy позволяет кормить маску в виде int индексов (0, 1, 2...)
+        model.compile(
+            optimizer=optimizer, 
+            loss='sparse_categorical_crossentropy', 
+            metrics=['sparse_categorical_accuracy']
+        )
+        
+        self.logger.info("U-Net model compiled successfully.")
+        return model
+""",
+
+        "src/training/trainer.py": """import tensorflow as tf
+from pathlib import Path
+import logging
+
+class Trainer:
+    def __init__(self, model: tf.keras.Model, config: dict, logger: logging.Logger):
+        self.model = model
+        self.config = config
+        self.logger = logger
+        self.epochs = config["training"]["epochs"]
+        self.checkpoints_dir = Path(config["paths"]["checkpoints_dir"])
+        self.logs_dir = Path(config["paths"]["logs_dir"])
+        self.models_dir = Path(config["paths"]["models_dir"])
+
+    def _get_callbacks(self) -> list:
+        ckpt_path = self.checkpoints_dir / "best_model.keras"
+        csv_path = self.logs_dir / "training_log.csv"
+        tb_path = self.logs_dir / "tensorboard"
+
+        callbacks = [
+            tf.keras.callbacks.ModelCheckpoint(
+                filepath=str(ckpt_path), monitor='val_loss', # Сохраняем по лоссу валидации
+                save_best_only=True, verbose=1
+            ),
+            tf.keras.callbacks.EarlyStopping(
+                monitor='val_loss', patience=self.config["training"]["early_stopping_patience"], 
+                restore_best_weights=True, verbose=1
+            ),
+            tf.keras.callbacks.ReduceLROnPlateau(
+                monitor='val_loss', factor=self.config["training"]["reduce_lr_factor"], 
+                patience=self.config["training"]["reduce_lr_patience"], verbose=1
+            ),
+            tf.keras.callbacks.CSVLogger(str(csv_path)),
+            tf.keras.callbacks.TensorBoard(log_dir=str(tb_path), histogram_freq=1)
+        ]
+        return callbacks
+
+    def train(self, train_ds: tf.data.Dataset, val_ds: tf.data.Dataset):
+        self.logger.info("Starting U-Net training process...")
+        history = self.model.fit(
+            train_ds, validation_data=val_ds,
+            epochs=self.epochs, callbacks=self._get_callbacks()
+        )
+        final_model_path = self.models_dir / "final_model.keras"
+        self.model.save(str(final_model_path))
+        self.logger.info(f"Training completed. Final model saved to {final_model_path}")
+        return history
+""",
+
+        # Оценка обучения
+        "src/evaluation/evaluator.py": """import numpy as np
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import pandas as pd
+from pathlib import Path
+import json
+import logging
+
+class Evaluator:
+    def __init__(self, model: tf.keras.Model, config: dict, logger: logging.Logger):
+        self.model = model
+        self.config = config
+        self.logger = logger
+        self.artifacts_dir = Path(config["paths"]["artifacts_dir"])
+
+    def evaluate(self, val_ds: tf.data.Dataset, history):
+        self.logger.info("Generating training history plots...")
+        self._plot_history(history)
+        self.logger.info("Evaluation complete.")
+
+    def _plot_history(self, history):
+        hist_df = pd.DataFrame(history.history)
+        plt.figure(figsize=(12, 5))
+        
+        plt.subplot(1, 2, 1)
+        plt.plot(hist_df['loss'], label='Train Loss')
+        plt.plot(hist_df['val_loss'], label='Val Loss')
+        plt.title('Loss (Sparse Categ. Crossentropy)')
+        plt.legend()
+        
+        plt.subplot(1, 2, 2)
+        plt.plot(hist_df['sparse_categorical_accuracy'], label='Train Acc')
+        plt.plot(hist_df['val_sparse_categorical_accuracy'], label='Val Acc')
+        plt.title('Pixel Accuracy')
+        plt.legend()
+        
+        plt.tight_layout()
+        plt.savefig(self.artifacts_dir / "training_history.png")
+        plt.close()
+""",
+
+        # Инференс масок с наложением (Overlay)
+        "src/inference/predictor.py": """import tensorflow as tf
+import numpy as np
+import cv2
+from pathlib import Path
+import json
+import logging
+import matplotlib.pyplot as plt
+
+class Predictor:
+    def __init__(self, config: dict, logger: logging.Logger):
+        self.config = config
+        self.logger = logger
+        self.img_size = tuple(config["data"]["image_size"])
+        self.alpha = config["inference"].get("alpha", 0.5)
+        
+        models_dir = Path(config["paths"]["models_dir"])
+        self.artifacts_dir = Path(config["paths"]["artifacts_dir"])
+        
+        map_path = self.artifacts_dir / "label_map.json"
+        if not map_path.exists(): raise FileNotFoundError("label_map.json not found.")
+        
+        with open(map_path, "r", encoding="utf-8") as f:
+            self.idx_to_class = json.load(f)
+            self.num_classes = len(self.idx_to_class)
+            
+        # Генерация ярких случайных цветов для классов (фон = черный)
+        np.random.seed(42)
+        self.colors = np.random.randint(0, 255, size=(self.num_classes, 3), dtype=np.uint8)
+        self.colors[0] = [0, 0, 0] # Background
+            
+        model_path = models_dir / "final_model.keras"
+        if not model_path.exists(): raise FileNotFoundError("Model not found.")
+        
+        self.logger.info("Loading U-Net model...")
+        self.model = tf.keras.models.load_model(str(model_path))
+        self.logger.info("Model loaded.")
+
+    def predict_single(self, img_path: str, save_output=True):
+        path = Path(img_path)
+        if not path.exists():
+            self.logger.error(f"Image not found: {path}")
+            return None
+            
+        try:
+            # Читаем через OpenCV (оставляем оригинал для красивого наложения)
+            orig_img = cv2.imread(str(path))
+            orig_img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2RGB)
+            orig_shape = orig_img.shape[:2]
+            
+            # Подготовка для модели
+            img_resized = cv2.resize(orig_img, self.img_size)
+            img_tensor = np.expand_dims(img_resized, axis=0).astype(np.float32)
+            
+            # Инференс маски: предсказываем класс для каждого пикселя
+            pred_probs = self.model.predict(img_tensor, verbose=0)[0] # Shape: (H, W, Classes)
+            pred_mask = np.argmax(pred_probs, axis=-1).astype(np.uint8) # Shape: (H, W)
+            
+            # Возвращаем размер маски к оригинальному разрешению изображения
+            pred_mask = cv2.resize(pred_mask, (orig_shape[1], orig_shape[0]), interpolation=cv2.INTER_NEAREST)
+            
+            if save_output:
+                # Создаем цветную маску
+                color_mask = np.zeros_like(orig_img)
+                for class_idx in range(1, self.num_classes): # Пропускаем фон
+                    color_mask[pred_mask == class_idx] = self.colors[class_idx]
+                
+                # Наложение маски на оригинал с прозрачностью alpha
+                overlay = cv2.addWeighted(orig_img, 1.0, color_mask, self.alpha, 0)
+                
+                out_path = self.artifacts_dir / f"pred_{path.name}"
+                overlay_bgr = cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR)
+                cv2.imwrite(str(out_path), overlay_bgr)
+                self.logger.info(f"Saved segmentation overlay to {out_path}")
+            
+            return pred_mask
+        except Exception as e:
+            self.logger.error(f"Error predicting {path.name}: {e}")
+            return None
+
+    def predict_folder(self, folder_path: str):
+        folder = Path(folder_path)
+        if not folder.is_dir(): return
+        
+        images = [p for p in folder.iterdir() if p.suffix.lower() in {'.png', '.jpg', '.jpeg', '.bmp'}]
+        self.logger.info(f"Found {len(images)} images for segmentation.")
+        
+        # Сохраним легенду цветов
+        self._save_legend()
+        
+        for img_path in images:
+            self.predict_single(str(img_path))
+
+    def _save_legend(self):
+        plt.figure(figsize=(4, self.num_classes * 0.5))
+        for i in range(1, self.num_classes):
+            plt.plot([0], [0], color=self.colors[i]/255.0, label=self.idx_to_class[str(i)], linewidth=10)
+        plt.legend(loc='center', fontsize=12)
+        plt.axis('off')
+        plt.savefig(self.artifacts_dir / "color_legend.png", bbox_inches='tight')
+        plt.close()
+""",
+
+        "train.py": """import os
+import tensorflow as tf
+from src.utils.config_parser import load_config
+from src.utils.logger import setup_logger
+from src.data.dataset import DataPipeline
+from src.models.model_builder import ModelBuilder
+from src.training.trainer import Trainer
+from src.evaluation.evaluator import Evaluator
+from pathlib import Path
+
+def main():
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+    config = load_config()
+    logger = setup_logger("TrainerLogger", Path(config["paths"]["logs_dir"]))
+    tf.random.set_seed(config["project"]["seed"])
+
+    try:
+        pipeline = DataPipeline(config, logger)
+        train_ds, val_ds, num_classes = pipeline.create_datasets()
+
+        builder = ModelBuilder(config, num_classes, logger)
+        model = builder.build()
+        model.summary(print_fn=logger.info)
+
+        trainer = Trainer(model, config, logger)
+        history = trainer.train(train_ds, val_ds)
+
+        evaluator = Evaluator(model, config, logger)
+        evaluator.evaluate(val_ds, history)
+
+        logger.info("Segmentation training finished successfully.")
+
+    except Exception as e:
+        logger.exception(f"Fatal error during training: {e}")
+
+if __name__ == "__main__":
+    main()
+""",
+
+        "predict.py": """import argparse
+import os
+from src.utils.config_parser import load_config
+from src.utils.logger import setup_logger
+from src.inference.predictor import Predictor
+from pathlib import Path
+
+def main():
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+    parser = argparse.ArgumentParser(description="U-Net Semantic Segmentation Inference")
+    parser.add_argument("--image", type=str, help="Path to a single image")
+    parser.add_argument("--folder", type=str, help="Path to a folder of images")
+    args = parser.parse_args()
+
+    config = load_config()
+    logger = setup_logger("PredictorLogger", Path(config["paths"]["logs_dir"]))
+
+    if not args.image and not args.folder:
+        logger.error("Please provide either --image or --folder.")
+        return
+
+    try:
+        predictor = Predictor(config, logger)
+
+        if args.image:
+            logger.info(f"Running inference on: {args.image}")
+            predictor.predict_single(args.image)
+
+        if args.folder:
+            logger.info(f"Running inference on folder: {args.folder}")
+            predictor.predict_folder(args.folder)
+
+    except Exception as e:
+        logger.exception(f"Fatal error during inference: {e}")
+
+if __name__ == "__main__":
+    main()
+""",
+        "src/__init__.py": "", "src/utils/__init__.py": "", "src/data/__init__.py": "",
+        "src/models/__init__.py": "", "src/training/__init__.py": "",
+        "src/evaluation/__init__.py": "", "src/inference/__init__.py": ""
+    }
+
+    base_path.mkdir(exist_ok=True)
+    print(f"[*] Папка: {project_name}/")
+
+    for d in directories:
+        (base_path / d).mkdir(parents=True, exist_ok=True)
+
+    for file_path, content in files_content.items():
+        with open(base_path / file_path, "w", encoding="utf-8") as f:
+            f.write(content)
+
+    print("\\n✅ Проект успешно переписан под U-Net Семантическую Сегментацию!")
+
+if __name__ == "__main__":
+    create_project()
+
+============================================================
+ФАЙЛ: requirements.txt
+============================================================
+
+tensorflow==2.15.0
+keras==2.15.0
+PyYAML==6.0.1
+scikit-learn==1.4.0
+matplotlib==3.8.2
+pandas==2.2.0
+numpy==1.26.3
+opencv-python==4.9.0.80
+streamlit==1.32.0
+
+============================================================
+ФАЙЛ: requirements_linux.txt
+============================================================
+
+tensorflow==2.15.0
+PyYAML
+opencv-python
+pandas
+matplotlib
+tqdm
+tensorflow[and-cuda]
+tensorboard-plugin-profile
+tensorboard-data-server
+streamlit
+
+============================================================
+ФАЙЛ: train.py
+============================================================
+
+import os
+import argparse
+import tensorflow as tf
+from tensorflow.keras import mixed_precision
+from src.utils.config_parser import load_config
+from src.utils.logger import setup_logger
+from src.data.dataset import DataPipeline
+from src.models.model_builder import ModelBuilder  # Исправлен импорт с большой буквы
+from src.training.trainer import Trainer
+from src.evaluation.evaluator import Evaluator
+from pathlib import Path
+
+def setup_gpu_and_precision(logger):
+    gpus = tf.config.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            logger.info(f"✅ Успех: Memory Growth включен для {len(gpus)} GPU.")
+        except RuntimeError as e:
+            logger.error(f"⚠️ Ошибка при настройке GPU: {e}")
+    else:
+        logger.warning("⚠️ GPU не найден, обучение будет идти на CPU.")
+
+    # Включаем смешанную точность для ускорения
+    policy = mixed_precision.Policy('mixed_float16')
+    mixed_precision.set_global_policy(policy)
+    logger.info(f"⚡ Успех: Mixed Precision включен.")
+
+def main():
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+    
+    config = load_config()
+    
+    # --- НАСТРОЙКА АРГУМЕНТОВ КОМАНДНОЙ СТРОКИ ---
+    parser = argparse.ArgumentParser(description="Запуск обучения U-Net")
+    parser.add_argument("epochs", nargs="?", type=int, default=None, 
+                        help="Количество эпох (если не указано, берется из config.yaml)")
+    
+    # Параметр --unfreeze. Если он есть в команде, значение True, если нет — False.
+    parser.add_argument("--unfreeze", action="store_true", 
+                        help="Разморозить предобученный энкодер (MobileNet) для Fine-tuning")
+    
+    args = parser.parse_args()
+
+    logger = setup_logger("TrainerLogger", Path(config["paths"]["logs_dir"]))
+    
+    # Обработка количества эпох
+    if args.epochs is not None:
+        config["training"]["epochs"] = args.epochs
+        logger.info(f"🔄 Количество эпох переопределено -> {args.epochs}")
+    else:
+        logger.info(f"📄 Используются эпохи из конфига -> {config['training']['epochs']}")
+
+    # Логируем режим работы энкодера
+    unfreeze_mode = args.unfreeze
+    mode_text = "🔥 FINE-TUNING (Энкодер разморожен)" if unfreeze_mode else "❄️ WARM-UP (Энкодер заморожен)"
+    logger.info(f"🚀 РЕЖИМ ОБУЧЕНИЯ: {mode_text}")
+
+    tf.random.set_seed(config["project"]["seed"])
+
+    try:
+        setup_gpu_and_precision(logger)
+
+        pipeline = DataPipeline(config, logger)
+        train_ds, val_ds, num_classes, train_count, val_count = pipeline.create_datasets()
+
+        # 1. Строим модель, передавая статус разморозки энкодера
+        builder = ModelBuilder(config, num_classes, logger)
+        model = builder.build(trainable_encoder=unfreeze_mode)
+
+        # --- 🚀 МАГИЯ ДООБУЧЕНИЯ (ЗАГРУЗКА ВЕСОВ) ---
+        final_model_path = Path(config["paths"]["models_dir"]) / "final_model.keras"
+        if final_model_path.exists():
+            logger.info(f"🔄 НАЙДЕНА МОДЕЛЬ! Загружаем веса из {final_model_path}...")
+            # Загружаем веса в новую архитектуру
+            model.load_weights(str(final_model_path))
+            logger.info("✅ Веса успешно загружены. Продолжаем обучение!")
+        else:
+            logger.info("🌟 Старая модель не найдена. Начинаем с нуля (или с весов ImageNet).")
+
+        trainer = Trainer(model, config, logger)
+        history = trainer.train(train_ds, val_ds, train_count, val_count)
+
+        evaluator = Evaluator(model, config, logger)
+        evaluator.evaluate(val_ds, history)
+
+        logger.info("Segmentation training finished successfully.")
+
+    except Exception as e:
+        logger.exception(f"Fatal error during training: {e}")
+
+if __name__ == "__main__":
+    main()
+
+============================================================
+ФАЙЛ: .devcontainer\devcontainer.json
+============================================================
+
+{
+  "name": "My Python Environment",
+  "image": "mcr.microsoft.com/devcontainers/python:3.10",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python"]
+    }
+  }
+}
+
+============================================================
+ФАЙЛ: configs\config.yaml
+============================================================
+
+project:
+  name: "unet_segmentation_v1"
+  seed: 42
+
+paths:
+  data_dir: "data"
+  models_dir: "models"
+  logs_dir: "logs"
+  artifacts_dir: "artifacts"
+  checkpoints_dir: "checkpoints"
+
+data:
+  image_size: [512, 512] # Разрешение должно быть кратно 16 для U-Net
+  batch_size: 16         # Уменьшен батч-сайз, сегментация ест больше памяти
+  classes: ['Background', 'BS_CL_es', 'BS_CL_intermediate', 'Obstacle_CL_ground', 'Obstacle_CL_ground1', 'Obstacle_CL_rail', 'Obstacle_CL_road', 'Obstacle_CL_water', 'Other_CL_sky', 'Superstructure_CL_cons', 'Superstructure_CL_cons_under', 'Superstructure_CL_road']
+  use_augmentation: false # Для генератора отключим сложные аугментации для стабильности
+  cache: false
+
+model:
+  type: "unet"
+  learning_rate: 0.00005
+
+training:
+  epochs: 30
+  early_stopping_patience: 12
+  reduce_lr_patience: 6
+  reduce_lr_factor: 0.5
+
+inference:
+  alpha: 0.5 # Прозрачность наложения маски (0 до 1)
+
+
+============================================================
+ФАЙЛ: src\__init__.py
+============================================================
+
+
+
+============================================================
+ФАЙЛ: src\evaluation\evaluator.py
+============================================================
+
+import numpy as np
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import pandas as pd
+from pathlib import Path
+import json
+import logging
+
+class Evaluator:
+    def __init__(self, model: tf.keras.Model, config: dict, logger: logging.Logger):
+        self.model = model
+        self.config = config
+        self.logger = logger
+        self.artifacts_dir = Path(config["paths"]["artifacts_dir"])
+
+    def evaluate(self, val_ds: tf.data.Dataset, history):
+        self.logger.info("Generating training history plots...")
+        self._plot_history(history)
+        self.logger.info("Evaluation complete.")
+
+    def _plot_history(self, history):
+        hist_df = pd.DataFrame(history.history)
+        plt.figure(figsize=(12, 5))
+        
+        # График потерь (Loss)
+        plt.subplot(1, 2, 1)
+        plt.plot(hist_df['loss'], label='Train Loss')
+        if 'val_loss' in hist_df.columns:
+            plt.plot(hist_df['val_loss'], label='Val Loss')
+        plt.title('Loss (Crossentropy)')
+        plt.legend()
+        
+        # График точности (Умный поиск имени метрики)
+        plt.subplot(1, 2, 2)
+        # Keras 3 часто переименовывает метрики, ищем доступную
+        acc_key = 'sparse_categorical_accuracy' if 'sparse_categorical_accuracy' in hist_df.columns else 'accuracy'
+        val_acc_key = f'val_{acc_key}'
+        
+        if acc_key in hist_df.columns:
+            plt.plot(hist_df[acc_key], label='Train Acc')
+        if val_acc_key in hist_df.columns:
+            plt.plot(hist_df[val_acc_key], label='Val Acc')
+            
+        plt.title('Pixel Accuracy')
+        plt.legend()
+        
+        plt.tight_layout()
+        plt.savefig(self.artifacts_dir / "training_history.png")
+        plt.close()
+
+============================================================
+ФАЙЛ: src\evaluation\__init__.py
+============================================================
+
+
+
+============================================================
+ФАЙЛ: src\inference\predictor.py
+============================================================
+
+import tensorflow as tf
+import numpy as np
+import cv2
+from pathlib import Path
+import json
+import logging
+import matplotlib.pyplot as plt
+
+class Predictor:
+    def __init__(self, config: dict, logger: logging.Logger):
+        self.config = config
+        self.logger = logger
+        self.img_size = tuple(config["data"]["image_size"])
+        self.alpha = config["inference"].get("alpha", 0.5)
+        
+        models_dir = Path(config["paths"]["models_dir"])
+        self.artifacts_dir = Path(config["paths"]["artifacts_dir"])
+        
+        map_path = self.artifacts_dir / "label_map.json"
+        if not map_path.exists(): raise FileNotFoundError("label_map.json not found.")
+        
+        with open(map_path, "r", encoding="utf-8") as f:
+            self.idx_to_class = json.load(f)
+            self.num_classes = len(self.idx_to_class)
+            
+        # Генерация ярких случайных цветов для классов (фон = черный)
+        np.random.seed(42)
+        self.colors = np.random.randint(0, 255, size=(self.num_classes, 3), dtype=np.uint8)
+        self.colors[0] = [0, 0, 0] # Background
+            
+        model_path = models_dir / "final_model.keras"
+        if not model_path.exists(): raise FileNotFoundError("Model not found.")
+        
+        self.logger.info("Loading U-Net model...")
+        self.model = tf.keras.models.load_model(str(model_path))
+        self.logger.info("Model loaded.")
+
+    def predict_single(self, img_path: str, save_output=True):
+        path = Path(img_path)
+        if not path.exists():
+            self.logger.error(f"Image not found: {path}")
+            return None
+            
+        try:
+            # Читаем через OpenCV (оставляем оригинал для красивого наложения)
+            orig_img = cv2.imread(str(path))
+            orig_img = cv2.cvtColor(orig_img, cv2.COLOR_BGR2RGB)
+            orig_shape = orig_img.shape[:2]
+            
+            # Подготовка для модели
+            img_resized = cv2.resize(orig_img, self.img_size)
+            img_tensor = np.expand_dims(img_resized, axis=0).astype(np.float32)
+            
+            # Инференс маски
+            pred_probs = self.model.predict(img_tensor, verbose=0)[0] 
+            
+            # СГЛАЖИВАНИЕ: растягиваем дробные вероятности (INTER_CUBIC дает самые плавные края)
+            pred_probs_resized = cv2.resize(pred_probs, (orig_shape[1], orig_shape[0]), interpolation=cv2.INTER_CUBIC)
+            
+            # И только теперь выбираем класс-победитель для каждого пикселя
+            pred_mask = np.argmax(pred_probs_resized, axis=-1).astype(np.uint8)
+            
+            # --- Морфологическая очистка маски ---
+            # 1. Убираем "соль" (мелкие случайные пиксели)
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+            pred_mask = cv2.morphologyEx(pred_mask, cv2.MORPH_OPEN, kernel)
+            
+            # 2. Замазываем "дырки" внутри объектов
+            pred_mask = cv2.morphologyEx(pred_mask, cv2.MORPH_CLOSE, kernel)
+            
+            if save_output:
+                # Создаем цветную маску
+                color_mask = np.zeros_like(orig_img)
+                for class_idx in range(1, self.num_classes): # Пропускаем фон
+                    color_mask[pred_mask == class_idx] = self.colors[class_idx]
+                
+                # Наложение маски на оригинал с прозрачностью alpha
+                overlay = cv2.addWeighted(orig_img, 1.0, color_mask, self.alpha, 0)
+                
+                out_path = self.artifacts_dir / f"pred_{path.name}"
+                overlay_bgr = cv2.cvtColor(overlay, cv2.COLOR_RGB2BGR)
+                cv2.imwrite(str(out_path), overlay_bgr)
+                self.logger.info(f"Saved segmentation overlay to {out_path}")
+            
+            return pred_mask
+        except Exception as e:
+            self.logger.error(f"Error predicting {path.name}: {e}")
+            return None
+
+    def predict_folder(self, folder_path: str):
+        folder = Path(folder_path)
+        if not folder.is_dir(): return
+        
+        images = [p for p in folder.iterdir() if p.suffix.lower() in {'.png', '.jpg', '.jpeg', '.bmp'}]
+        self.logger.info(f"Found {len(images)} images for segmentation.")
+        
+        # Сохраним легенду цветов
+        self._save_legend()
+        
+        for img_path in images:
+            self.predict_single(str(img_path))
+
+    def _save_legend(self):
+        plt.figure(figsize=(4, self.num_classes * 0.5))
+        for i in range(1, self.num_classes):
+            plt.plot([0], [0], color=self.colors[i]/255.0, label=self.idx_to_class[str(i)], linewidth=10)
+        plt.legend(loc='center', fontsize=12)
+        plt.axis('off')
+        plt.savefig(self.artifacts_dir / "color_legend.png", bbox_inches='tight')
+        plt.close()
+
+
+============================================================
+ФАЙЛ: src\inference\__init__.py
+============================================================
+
+
+
+============================================================
+ФАЙЛ: src\training\trainer.py
+============================================================
+
+import tensorflow as tf
+from pathlib import Path
+import logging
+# Импортируем наш новый модуль аналитики
+from src.utils.callbacks import LossDecompositionCallback
+
+class Trainer:
+    def __init__(self, model: tf.keras.Model, config: dict, logger: logging.Logger):
+        self.model = model
+        self.config = config
+        self.logger = logger
+        self.epochs = config["training"]["epochs"]
+        self.checkpoints_dir = Path(config["paths"]["checkpoints_dir"])
+        self.logs_dir = Path(config["paths"]["logs_dir"])
+        self.models_dir = Path(config["paths"]["models_dir"])
+
+    def _get_callbacks(self, val_ds: tf.data.Dataset = None) -> list:
+        ckpt_path = self.checkpoints_dir / "best_model.keras"
+        csv_path = self.logs_dir / "training_log.csv"
+        tb_path = self.logs_dir / "tensorboard"
+
+        callbacks = [
+            tf.keras.callbacks.ModelCheckpoint(
+                filepath=str(ckpt_path), monitor='val_loss',
+                save_best_only=True, verbose=1
+            ),
+            tf.keras.callbacks.EarlyStopping(
+                monitor='val_loss', 
+                patience=self.config["training"]["early_stopping_patience"], 
+                restore_best_weights=True, verbose=1
+            ),
+            tf.keras.callbacks.ReduceLROnPlateau(
+                monitor='val_loss', 
+                factor=self.config["training"]["reduce_lr_factor"], 
+                patience=self.config["training"]["reduce_lr_patience"], 
+                verbose=1
+            ),
+            tf.keras.callbacks.CSVLogger(str(csv_path)),
+            tf.keras.callbacks.TensorBoard(log_dir=str(tb_path), histogram_freq=1)
+        ]
+
+        # --- ДОБАВЛЯЕМ LOSS DECOMPOSITION ЕСЛИ ЕСТЬ ВАЛИДАЦИЯ ---
+        if val_ds is not None:
+            analyzer = LossDecompositionCallback(
+                val_data=val_ds,
+                loss_fn=self.model.loss, # Наш кастомный лосс из ModelBuilder
+                log_path="artifacts/loss_log.csv"
+            )
+            callbacks.append(analyzer)
+            self.logger.info("📈 LossDecompositionCallback успешно добавлен в очередь.")
+
+        return callbacks
+
+    def train(self, train_ds: tf.data.Dataset, val_ds: tf.data.Dataset, train_count: int, val_count: int):
+        self.logger.info("Starting U-Net training process...")
+        
+        batch_size = self.config["data"]["batch_size"]
+        steps_per_epoch = max(1, train_count // batch_size)
+        validation_steps = max(1, val_count // batch_size)
+
+        # Передаем val_ds в метод получения колбэков
+        active_callbacks = self._get_callbacks(val_ds if val_count > 0 else None)
+
+        history = self.model.fit(
+            train_ds.repeat(), 
+            validation_data=val_ds.repeat() if val_count > 0 else None,
+            epochs=self.epochs,
+            steps_per_epoch=steps_per_epoch,
+            validation_steps=validation_steps if val_count > 0 else None,
+            callbacks=active_callbacks # Используем подготовленный список
+        )
+        
+        final_model_path = self.models_dir / "final_model.keras"
+        self.model.save(str(final_model_path))
+        self.logger.info(f"Training completed. Final model saved to {final_model_path}")
+        return history
+
+============================================================
+ФАЙЛ: src\training\__init__.py
+============================================================
+
+
+
+============================================================
+ФАЙЛ: src\utils\callbacks.py
+============================================================
+
+import tensorflow as tf
+import pandas as pd
+from pathlib import Path
+import numpy as np
+import sys
+
+class LossDecompositionCallback(tf.keras.callbacks.Callback):
+    def __init__(self, val_data, loss_fn, log_path="artifacts/loss_log.csv"):
+        super().__init__()
+        self.val_data = val_data
+        # Сохраняем ссылку на функцию лосса
+        self.loss_fn = loss_fn
+        self.log_path = Path(log_path)
+        self.history = []
+        self.log_path.parent.mkdir(parents=True, exist_ok=True)
+        print(f"\n[DEBUG] Колбэк анализатора инициализирован. Ждем конца эпохи...")
+
+    def on_epoch_end(self, epoch, logs=None):
+        print(f"\n--- 🛰️ ЗАПУСК АНАЛИЗА ЛОССА (Эпоха {epoch+1}) ---")
+        logs = logs or {}
+        
+        try:
+            # 1. Получаем батч данных
+            # Мы используем .take(1), чтобы не сбить итератор основного обучения
+            for x_batch, y_batch in self.val_data.take(1):
+                x_val, y_true = x_batch, y_batch
+                break
+            
+            # 2. Инференс
+            y_pred = self.model(x_val, training=False)
+            
+            # 3. ВЫЗОВ ФУНКЦИИ ЛОССА (С обходом обертки Keras)
+            # Пытаемся вызвать напрямую, а если нет - ищем атрибут .fn (где Keras прячет оригинал)
+            target_fn = self.loss_fn
+            if hasattr(self.loss_fn, 'fn'):
+                target_fn = self.loss_fn.fn
+            elif hasattr(self.loss_fn, 'target_fn'): # Для некоторых кастомных оберток
+                target_fn = self.loss_fn.target_fn
+
+            # Вызываем с нашим спец. аргументом
+            raw_components = target_fn(y_true, y_pred, return_components=True)
+            
+            # 4. Преобразование в числа
+            safe_components = {
+                k: float(v.numpy()) if hasattr(v, "numpy") else float(v) 
+                for k, v in raw_components.items()
+            }
+            
+            # Добавляем стандартные метрики из логов обучения
+            safe_components['epoch'] = epoch + 1
+            safe_components['total_val_loss'] = float(logs.get('val_loss', 0))
+            safe_components['masked_acc'] = float(logs.get('masked_accuracy', 0))
+            
+            self.history.append(safe_components)
+            
+            # 5. Сохранение
+            df = pd.DataFrame(self.history)
+            df.to_csv(self.log_path, index=False)
+            print(f"✅ УСПЕХ: Данные лосса сохранены в {self.log_path}")
+            
+        except Exception as e:
+            # Выводим ошибку максимально заметно!
+            print("\n" + "!"*60)
+            print(f"❌ ОШИБКА В LOSS CALLBACK: {str(e)}")
+            print("Тип ошибки:", type(e))
+            # Если это TypeError, значит Keras всё еще блокирует аргумент return_components
+            print("!"*60 + "\n")
+
+============================================================
+ФАЙЛ: src\utils\config_parser.py
+============================================================
+
+import yaml
+from pathlib import Path
+
+def load_config(config_path: str = "configs/config.yaml") -> dict:
+    root_dir = Path(__file__).resolve().parents[2]
+    full_config_path = root_dir / config_path
+    if not full_config_path.exists(): raise FileNotFoundError(f"Config not found: {full_config_path}")
+    with open(full_config_path, "r", encoding="utf-8") as f: config = yaml.safe_load(f)
+    paths = config.get("paths", {})
+    for key, folder in paths.items():
+        if key != "data_dir":
+            dir_path = root_dir / folder
+            dir_path.mkdir(parents=True, exist_ok=True)
+            config["paths"][key] = str(dir_path)
+    config["paths"]["data_dir"] = str(root_dir / paths.get("data_dir", "data"))
+    config["root_dir"] = str(root_dir)
+    return config
+
+
+============================================================
+ФАЙЛ: src\utils\logger.py
+============================================================
+
+import logging
+import sys
+from pathlib import Path
+
+def setup_logger(name: str, log_dir: Path) -> logging.Logger:
+    logger = logging.getLogger(name)
+    if logger.hasHandlers(): return logger
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    log_file = log_dir / "project.log"
+    fh = logging.FileHandler(log_file, encoding='utf-8')
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+    return logger
+
+
+============================================================
+ФАЙЛ: src\utils\__init__.py
+============================================================
+
+
