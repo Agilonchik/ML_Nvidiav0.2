@@ -6,3 +6,7 @@
 
 Цели:
   1. Доработать модуль для обучения для ускоренной разметки данных
+
+## AutoML
+- Подробный план внедрения AutoML: `doc/AutoML/requirements_automl_implementation.md`.
+- Дорожная карта и критерии готовности: `doc/AutoML/automl_readiness_roadmap.md`.
