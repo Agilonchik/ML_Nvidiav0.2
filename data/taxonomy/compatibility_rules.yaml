@@ -1,0 +1,22 @@
+version: "1.0.0"
+
+severity_levels:
+  - id: severity_0
+    value: 0
+    name: No visible defect
+
+  - id: severity_1
+    value: 1
+    name: Minor
+
+  - id: severity_2
+    value: 2
+    name: Moderate
+
+  - id: severity_3
+    value: 3
+    name: Severe
+
+  - id: severity_4
+    value: 4
+    name: Critical

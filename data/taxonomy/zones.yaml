@@ -1,0 +1,12 @@
+version "1.0.0"
+zones:
+    - id: Bridge
+      name: "Bridge"
+      parent: null
+    - id: Superstructure
+      name: "Superstructure"
+      parent: Bridge
+    - id: Substructure
+      name: "Substructure"
+      parent: Bridge
+
