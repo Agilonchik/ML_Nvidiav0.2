@@ -8,6 +8,102 @@ import cv2
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import mixed_precision
+from PIL import Image, ImageDraw, ImageFont
+
+# Базовая директория проекта. Так скрипт можно запускать из любой папки.
+BASE_DIR = Path(__file__).resolve().parent
+
+# Шрифты с поддержкой кириллицы. Первый найденный будет использован для подписей.
+FONT_CANDIDATES = [
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
+    "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+    "C:/Windows/Fonts/arial.ttf",
+    "C:/Windows/Fonts/calibri.ttf",
+]
+
+FONT_PATH = next((p for p in FONT_CANDIDATES if Path(p).exists()), None)
+
+
+def _bgr_to_rgb_color(color):
+    """Перевод цвета OpenCV BGR в PIL RGB."""
+    return (int(color[2]), int(color[1]), int(color[0]))
+
+
+def _get_font(font_size):
+    """Возвращает TTF-шрифт с кириллицей или стандартный шрифт PIL."""
+    if FONT_PATH:
+        return ImageFont.truetype(FONT_PATH, font_size)
+    return ImageFont.load_default()
+
+
+def _strip_status_icons(text):
+    """
+    Убирает emoji-иконки из текста на изображении.
+    Некоторые TTF-шрифты в WSL не содержат ✅ ⚠️ ❌, из-за этого могут быть квадраты.
+    В терминале исходный текст с emoji остается без изменений.
+    """
+    return (
+        str(text)
+        .replace("✅", "")
+        .replace("⚠️", "")
+        .replace("⚠", "")
+        .replace("❌", "")
+        .strip()
+    )
+
+
+def put_text_ru(
+    img,
+    text,
+    position,
+    font_size=28,
+    color=(255, 255, 255),
+    background_box=None,
+    background_color=(0, 0, 0),
+    max_width=None,
+):
+    """
+    Выводит русский текст на OpenCV-изображение через Pillow.
+
+    img: изображение OpenCV в формате BGR
+    text: строка на русском
+    position: координаты верхнего левого угла текста (x, y)
+    font_size: размер шрифта
+    color: цвет текста в формате BGR
+    background_box: прямоугольник фона (x1, y1, x2, y2) или None
+    background_color: цвет фона в формате BGR
+    max_width: максимальная ширина текста; если текст не помещается, шрифт уменьшается
+    """
+    text = str(text)
+
+    # OpenCV BGR -> PIL RGB
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    pil_img = Image.fromarray(img_rgb)
+
+    draw = ImageDraw.Draw(pil_img)
+    x, y = position
+
+    # Подбор размера шрифта под заданную ширину
+    current_size = font_size
+    font = _get_font(current_size)
+
+    if max_width is not None:
+        while current_size > 8:
+            bbox = draw.textbbox((x, y), text, font=font)
+            text_width = bbox[2] - bbox[0]
+            if text_width <= max_width:
+                break
+            current_size -= 1
+            font = _get_font(current_size)
+
+    if background_box is not None:
+        draw.rectangle(background_box, fill=_bgr_to_rgb_color(background_color))
+
+    draw.text((x, y), text, font=font, fill=_bgr_to_rgb_color(color))
+
+    # PIL RGB -> OpenCV BGR
+    return cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
 # ==========================================
 # 🚀 1. ИНИЦИАЛИЗАЦИЯ И СЕТАП ЖЕЛЕЗА
@@ -51,10 +147,14 @@ def main():
     setup_hardware()
     
     # Загрузка конфига
-    with open("configs/config.yaml", "r", encoding="utf-8") as f: config = yaml.safe_load(f)
-    VAL_DIR = Path("data/val")
-    MODEL_PATH = Path("models/final_model.keras")
-    OUTPUT_PATH = Path("artifacts/diagnostics.png")
+    CONFIG_PATH = BASE_DIR / "configs" / "config.yaml"
+    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+
+    VAL_DIR = BASE_DIR / "data" / "val"
+    MODEL_PATH = BASE_DIR / "models" / "final_model.keras"
+    OUTPUT_PATH = BASE_DIR / "artifacts" / "diagnostics.png"
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     IMG_SIZE = tuple(config["data"]["image_size"])
     CLASS_NAMES = config['data']['classes']
 
@@ -178,9 +278,18 @@ def main():
         m_pred_bgr = cv2.cvtColor(m_pred_rgb, cv2.COLOR_RGB2BGR)
         p3 = cv2.resize(m_pred_bgr, DISPLAY_SIZE, interpolation=cv2.INTER_NEAREST)
         
-        # Добавляем текстовый отчет на панель (с фоном для читаемости)
-        cv2.rectangle(p3, (0, DISPLAY_SIZE[1]-25), (DISPLAY_SIZE[0], DISPLAY_SIZE[1]), (0,0,0), -1)
-        cv2.putText(p3, match, (10, DISPLAY_SIZE[1]-8), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
+        # Добавляем текстовый отчет на панель через Pillow, чтобы русский текст не превращался в "????"
+        match_for_image = _strip_status_icons(match)
+        p3 = put_text_ru(
+            p3,
+            match_for_image,
+            (8, DISPLAY_SIZE[1] - 25),
+            font_size=16,
+            color=(255, 255, 255),
+            background_box=(0, DISPLAY_SIZE[1] - 32, DISPLAY_SIZE[0], DISPLAY_SIZE[1]),
+            background_color=(0, 0, 0),
+            max_width=DISPLAY_SIZE[0] - 16,
+        )
 
         row = np.hstack([p1, p2, p3])
         grid_rows.append(row)
@@ -189,12 +298,36 @@ def main():
     # Финальная склейка и сохранение
     print("\n✅ Компоновка диагностической панели...")
     final_grid = np.vstack(grid_rows)
-    # Добавляем заголовки
-    header = np.zeros((50, final_grid.shape[1], 3), dtype=np.uint8)
+    # Добавляем заголовки через Pillow, чтобы кириллица корректно отображалась на изображении
+    header = np.zeros((60, final_grid.shape[1], 3), dtype=np.uint8)
     w_p = DISPLAY_SIZE[0]
-    cv2.putText(header, "Original Image", (10, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
-    cv2.putText(header, "Your Annotation (GT)", (w_p + 10, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
-    cv2.putText(header, "Network Prediction (Pred)", (w_p*2 + 10, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+
+    header = put_text_ru(
+        header,
+        "Исходное изображение",
+        (10, 15),
+        font_size=24,
+        color=(255, 255, 255),
+        max_width=w_p - 20,
+    )
+
+    header = put_text_ru(
+        header,
+        "Экспертная разметка",
+        (w_p + 10, 15),
+        font_size=24,
+        color=(255, 255, 255),
+        max_width=w_p - 20,
+    )
+
+    header = put_text_ru(
+        header,
+        "Прогнозирование модели",
+        (w_p * 2 + 10, 15),
+        font_size=24,
+        color=(255, 255, 255),
+        max_width=w_p - 20,
+    )
     
     final_output = np.vstack([header, final_grid])
     cv2.imwrite(str(OUTPUT_PATH), final_output)
