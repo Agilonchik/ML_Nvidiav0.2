@@ -3,6 +3,7 @@ import random
 import json
 import base64
 import yaml
+import colorsys
 from pathlib import Path
 import cv2
 import numpy as np
@@ -140,6 +141,71 @@ def mask_to_rgb(mask, colors):
     for idx in range(1, len(colors)): rgb[mask == idx] = colors[idx]
     return rgb
 
+
+def _build_class_colors(class_names):
+    """
+    Возвращает стабильный список цветов BGR под каждый класс:
+    - индекс 0 (фон) всегда черный
+    - первые 15 классов получают фиксированные различимые цвета
+    - для остальных генерируются дополнительные различимые цвета
+    """
+    # Палитра в RGB (визуально различимые цвета), далее переводим в BGR для OpenCV
+    reserved_rgb = [
+        (0, 0, 0),         # background
+        (230, 25, 75),     # red
+        (60, 180, 75),     # green
+        (255, 225, 25),    # yellow
+        (0, 130, 200),     # blue
+        (245, 130, 48),    # orange
+        (145, 30, 180),    # purple
+        (70, 240, 240),    # cyan
+        (240, 50, 230),    # magenta
+        (210, 245, 60),    # lime
+        (250, 190, 190),   # pink
+        (0, 128, 128),     # teal
+        (230, 190, 255),   # lavender
+        (170, 110, 40),    # brown
+        (255, 250, 200),   # beige
+    ]
+    colors_bgr = [(rbg[2], rbg[1], rbg[0]) for rbg in reserved_rgb]
+
+    # Для классов сверх 15 создаем цвета "рандомайзером" с фиксированным seed
+    # (чтобы цвет у класса не менялся между запусками).
+    if len(class_names) > len(colors_bgr):
+        rng = random.Random(42)
+        used = set(colors_bgr)
+        while len(colors_bgr) < len(class_names):
+            # Генерируем насыщенные и яркие цвета через HSV
+            h = rng.random()
+            s = rng.uniform(0.6, 0.95)
+            v = rng.uniform(0.75, 1.0)
+            r, g, b = colorsys.hsv_to_rgb(h, s, v)
+            bgr = (int(b * 255), int(g * 255), int(r * 255))
+            if bgr not in used:
+                colors_bgr.append(bgr)
+                used.add(bgr)
+
+    return np.array(colors_bgr, dtype=np.uint8)
+
+
+def _save_color_key(class_names, colors_bgr, output_path):
+    """Сохраняет ключ соответствия класс -> цвет в отдельный JSON-файл."""
+    key_payload = []
+    for idx, class_name in enumerate(class_names):
+        b, g, r = [int(c) for c in colors_bgr[idx]]
+        key_payload.append(
+            {
+                "class_index": idx,
+                "class_name": class_name,
+                "color_bgr": [b, g, r],
+                "color_rgb": [r, g, b],
+                "color_hex_rgb": f"#{r:02X}{g:02X}{b:02X}",
+            }
+        )
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(key_payload, f, ensure_ascii=False, indent=2)
+
 # ==========================================
 # 🛠 3. ГЛАВНЫЙ ЦИКЛ ДИАГНОСТИКИ
 # ==========================================
@@ -154,6 +220,7 @@ def main():
     VAL_DIR = BASE_DIR / "data" / "val"
     MODEL_PATH = BASE_DIR / "models" / "final_model.keras"
     OUTPUT_PATH = BASE_DIR / "artifacts" / "diagnostics.png"
+    COLOR_KEY_PATH = BASE_DIR / "artifacts" / "diagnostics_color_key.json"
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     IMG_SIZE = tuple(config["data"]["image_size"])
     CLASS_NAMES = config['data']['classes']
@@ -162,10 +229,10 @@ def main():
         print(f"❌ Ошибка: Модель не найдена по пути {MODEL_PATH}")
         return
 
-    # Генерация цветов (фон=черный, остальные - яркие)
-    np.random.seed(42)
-    COLORS = np.random.randint(50, 255, size=(len(CLASS_NAMES), 3), dtype=np.uint8)
-    COLORS[0] = (0, 0, 0)
+    # Стабильная палитра: 15 зарезервированных цветов + генерация для остальных
+    COLORS = _build_class_colors(CLASS_NAMES)
+    _save_color_key(CLASS_NAMES, COLORS, COLOR_KEY_PATH)
+    print(f"🎨 Ключ цветов сохранен в: {COLOR_KEY_PATH}")
     
     # Загрузка модели (БЕЗ компиляции, нам только предсказания)
     print("🌀 Загрузка модели...")
