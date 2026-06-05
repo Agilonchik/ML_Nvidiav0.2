@@ -158,74 +158,6 @@ def mask_to_rgb(mask, colors):
     return rgb
 
 
-<<<<<<< HEAD
-def natural_sort_key(value):
-    """
-    Естественная сортировка имен файлов:
-    img_2 идет раньше img_10.
-    """
-    value = str(value)
-    return [int(part) if part.isdigit() else part.lower() for part in re.split(r"(\d+)", value)]
-
-
-def resolve_jsons_in_order(val_dir, requested_items, sample_limit):
-    """
-    Возвращает список JSON-файлов для анализа в строго заданном порядке.
-
-    requested_items:
-      - имена изображений: example.jpg, example.png
-      - имена разметки: example.json
-      - относительные пути от data/val
-
-    Если requested_items пустой, берутся первые sample_limit JSON-файлов
-    в естественной сортировке.
-    """
-    available_jsons = [
-        f for f in val_dir.glob("*.json")
-        if "_aug_" not in f.name
-    ]
-
-    if not available_jsons:
-        raise FileNotFoundError(f"В папке {val_dir} не найдено JSON-файлов разметки.")
-
-    # Режим по умолчанию: если параметры запуска не переданы, работаем как раньше — случайная выборка.
-    if not requested_items:
-        k = min(sample_limit, len(available_jsons))
-        return random.sample(available_jsons, k)
-
-    selected_jsons = []
-    missing_items = []
-
-    for item in requested_items:
-        item_path = Path(str(item).strip().strip('"').strip("'"))
-
-        if not item_path.name:
-            continue
-
-        # Если передали имя картинки, заменяем расширение на .json.
-        # Если передали .json, оставляем .json.
-        json_name = item_path.name if item_path.suffix.lower() == ".json" else item_path.with_suffix(".json").name
-        json_path = val_dir / json_name
-
-        if json_path.exists() and "_aug_" not in json_path.name:
-            selected_jsons.append(json_path)
-        else:
-            missing_items.append(str(item))
-
-    if missing_items:
-        available_names = ", ".join(
-            f.name for f in sorted(available_jsons, key=lambda x: natural_sort_key(x.name))[:20]
-        )
-        raise FileNotFoundError(
-            "Не найдены JSON-разметки для следующих файлов: "
-            + ", ".join(missing_items)
-            + f"\nПроверьте имена файлов в аргументах командной строки."
-            + f"\nПервые доступные JSON в data/val: {available_names}"
-        )
-
-    return selected_jsons
-
-=======
 def _build_class_colors(class_names):
     """
     Возвращает стабильный список цветов BGR под каждый класс:
@@ -289,7 +221,6 @@ def _save_color_key(class_names, colors_bgr, output_path):
 
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(key_payload, f, ensure_ascii=False, indent=2)
->>>>>>> 5e35ebf78f0e226347760085732b5485f604edb1
 
 # ==========================================
 # 🛠 3. ГЛАВНЫЙ ЦИКЛ ДИАГНОСТИКИ
