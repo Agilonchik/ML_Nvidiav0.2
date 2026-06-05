@@ -11,7 +11,6 @@ class LossDecompositionCallback(tf.keras.callbacks.Callback):
         # Сохраняем ссылку на функцию лосса
         self.loss_fn = loss_fn
         self.log_path = Path(log_path)
-        self.history = []
         self.log_path.parent.mkdir(parents=True, exist_ok=True)
         print(f"\n[DEBUG] Колбэк анализатора инициализирован. Ждем конца эпохи...")
 
@@ -51,12 +50,17 @@ class LossDecompositionCallback(tf.keras.callbacks.Callback):
             safe_components['total_val_loss'] = float(logs.get('val_loss', 0))
             safe_components['masked_acc'] = float(logs.get('masked_accuracy', 0))
             
-            self.history.append(safe_components)
-            
-            # 5. Сохранение
-            df = pd.DataFrame(self.history)
-            df.to_csv(self.log_path, index=False)
-            print(f"✅ УСПЕХ: Данные лосса сохранены в {self.log_path}")
+            # 5. Сохранение в append-режиме: новые эпохи дописываются к прошлым
+            # запускам, а файл с историей больше не перезаписывается.
+            row_df = pd.DataFrame([safe_components])
+            file_exists = self.log_path.exists() and self.log_path.stat().st_size > 0
+            row_df.to_csv(
+                self.log_path,
+                mode='a',
+                header=not file_exists,
+                index=False,
+            )
+            print(f"✅ УСПЕХ: Данные лосса добавлены в {self.log_path}")
             
         except Exception as e:
             # Выводим ошибку максимально заметно!
