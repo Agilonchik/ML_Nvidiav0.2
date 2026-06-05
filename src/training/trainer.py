@@ -35,7 +35,7 @@ class Trainer:
                 patience=self.config["training"]["reduce_lr_patience"], 
                 verbose=1
             ),
-            tf.keras.callbacks.CSVLogger(str(csv_path)),
+            tf.keras.callbacks.CSVLogger(str(csv_path), append=True),
             tf.keras.callbacks.TensorBoard(log_dir=str(tb_path), histogram_freq=1)
         ]
 
