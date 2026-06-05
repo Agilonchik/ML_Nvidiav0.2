@@ -12,16 +12,20 @@ move_pairs.py
     pip install tqdm   # для красивого прогресс‑бара (необязательно)
 """
 
+import importlib
 import logging
 import shutil
-from collections import defaultdict, deque
+from collections import defaultdict
 from pathlib import Path
 
-try:
-    from tqdm import tqdm
-except ImportError:          # Если tqdm не установлен – используем простую замену.
+_tqdm_spec = importlib.util.find_spec("tqdm")
+if _tqdm_spec is None:
+
     def tqdm(iterable, **kwargs):
         return iterable
+
+else:
+    tqdm = importlib.import_module("tqdm").tqdm
 
 
 # ----------------------------------------------------------------------
@@ -68,13 +72,13 @@ def find_pairs(root: Path, exclude_dir: Path) -> dict[Path, list[Path]]:
     """
     groups = defaultdict(list)
 
-    for p in root.rglob("*.*"):                     # только файлы, у которых есть расширение
+    for p in root.rglob("*.*"):  # только файлы, у которых есть расширение
         if not p.is_file():
             continue
         # Не учитываем файлы, которые уже находятся в целевой папке
         try:
             p.relative_to(exclude_dir)
-            continue          # файл внутри exclude_dir → пропускаем
+            continue  # файл внутри exclude_dir → пропускаем
         except ValueError:
             pass
 
@@ -93,16 +97,14 @@ def main() -> None:
     src_dir = ask_path("Введите путь к исходной папке: ", must_exist=True)
 
     # Целевая подпапка может быть внутри, а может и вне исходного каталога.
-    dst_dir = ask_path(
-        "Введите путь к целевой подпапке (будет создана, если её нет): "
-    )
+    dst_dir = ask_path("Введите путь к целевой подпапке (будет создана, если её нет): ")
     dst_dir.mkdir(parents=True, exist_ok=True)
 
     # Находим группы одинаковых имён
     print("\nПоиск файлов…")
     pairs = find_pairs(src_dir, exclude_dir=dst_dir)
     total_groups = len(pairs)
-    total_files   = sum(len(v) for v in pairs.values())
+    total_files = sum(len(v) for v in pairs.values())
 
     if total_groups == 0:
         print("Не найдено ни одной группы одинаковых имён с разными расширениями.")
@@ -134,5 +136,5 @@ if __name__ == "__main__":
     )
     try:
         main()
-    except KeyboardInterrupt:          # Ctrl+C в терминале
+    except KeyboardInterrupt:  # Ctrl+C в терминале
         print("\nПрервано пользователем.")

@@ -5,7 +5,6 @@
 """
 
 from docx import Document
-from docx.shared import Pt, Inches
 
 # -------------------------------------------------
 # Текст отчёта. Скопируйте его полностью из блока ниже

@@ -38,7 +38,7 @@ from __future__ import annotations
 from pathlib import Path
 import argparse
 import hashlib
-import math
+import importlib
 import textwrap
 from typing import Any
 
@@ -47,18 +47,13 @@ from typing import Any
 # Optional dependency: PyYAML
 # ----------------------------
 
-try:
-    import yaml
-except ImportError as exc:
-    raise SystemExit(
-        "PyYAML is required. Install it with:\n"
-        "pip install pyyaml"
-    ) from exc
+yaml = importlib.import_module("yaml")
 
 
 # ----------------------------
 # Basic helpers
 # ----------------------------
+
 
 def esc(text: Any) -> str:
     """Escape text for SVG."""
@@ -85,6 +80,7 @@ def wrap_text(text: Any, width: int = 32) -> list[str]:
 # ----------------------------
 # YAML loading and validation
 # ----------------------------
+
 
 def load_yaml(input_path: Path) -> list[dict[str, Any]]:
     data = yaml.safe_load(input_path.read_text(encoding="utf-8"))
@@ -148,13 +144,14 @@ def validate_classes(classes: list[dict[str, Any]]) -> None:
         if parent is not None and parent not in by_name:
             print(
                 f'Warning: parent "{parent}" for class "{c["name"]}" '
-                f'is not present in classes. This node will be treated as orphan root.'
+                f"is not present in classes. This node will be treated as orphan root."
             )
 
 
 # ----------------------------
 # Tree building
 # ----------------------------
+
 
 def build_forest(classes: list[dict[str, Any]]):
     by_name = {c["name"]: c for c in classes}
@@ -303,6 +300,7 @@ def style_for(
 # Recursive layout
 # ----------------------------
 
+
 def subtree_height(
     node: dict[str, Any],
     children: dict[str | None, list[dict[str, Any]]],
@@ -405,7 +403,7 @@ def layout_forest(
     root_tree_width = root_w + indent_x * 3
 
     root_rows = [
-        roots[i:i + max_roots_per_row]
+        roots[i : i + max_roots_per_row]
         for i in range(0, len(roots), max_roots_per_row)
     ]
 
@@ -416,8 +414,7 @@ def layout_forest(
     for row_roots in root_rows:
         # Height of current row = maximum subtree height in this row.
         row_subtree_heights = [
-            subtree_height(root, children, node_h, row_gap)
-            for root in row_roots
+            subtree_height(root, children, node_h, row_gap) for root in row_roots
         ]
 
         row_height = max(root_h, max(row_subtree_heights))
@@ -464,6 +461,7 @@ def layout_forest(
 # SVG drawing
 # ----------------------------
 
+
 def center_top(box: tuple[int, int, int, int]) -> tuple[float, float]:
     x, y, w, h = box
     return x + w / 2, y
@@ -509,12 +507,12 @@ def draw_box(
     )
 
     svg.append(
-        f'<circle cx="{x+52}" cy="{y+52}" r="34" '
+        f'<circle cx="{x + 52}" cy="{y + 52}" r="34" '
         f'fill="#FFFFFF" stroke="{style["stroke"]}" stroke-width="4"/>'
     )
 
     svg.append(
-        f'<text x="{x+52}" y="{y+63}" text-anchor="middle" '
+        f'<text x="{x + 52}" y="{y + 63}" text-anchor="middle" '
         f'font-family="Arial, Helvetica, sans-serif" font-size="30" '
         f'font-weight="800" fill="{style["accent"]}">{node["id"]}</text>'
     )
@@ -530,25 +528,25 @@ def draw_box(
         f'<text x="{tx}" y="{ty}" '
         f'font-family="Arial, Helvetica, sans-serif" '
         f'font-size="25" font-weight="800" fill="#111827">'
-        f'ID: {node["id"]}</text>'
+        f"ID: {node['id']}</text>"
     )
 
     svg.append(
-        f'<text x="{tx}" y="{ty+34}" '
+        f'<text x="{tx}" y="{ty + 34}" '
         f'font-family="Arial, Helvetica, sans-serif" '
         f'font-size="23" font-weight="800" fill="#111827">'
         f'Name: <tspan font-weight="500">{name}</tspan></text>'
     )
 
     svg.append(
-        f'<text x="{tx}" y="{ty+68}" '
+        f'<text x="{tx}" y="{ty + 68}" '
         f'font-family="Arial, Helvetica, sans-serif" '
         f'font-size="21" font-weight="800" fill="#111827">'
         f'Parent: <tspan font-weight="500">{parent}</tspan></text>'
     )
 
     svg.append(
-        f'<text x="{tx}" y="{ty+100}" '
+        f'<text x="{tx}" y="{ty + 100}" '
         f'font-family="Arial, Helvetica, sans-serif" '
         f'font-size="20" font-weight="800" fill="#111827">'
         f'Type: <tspan font-weight="600" fill="{style["accent"]}">{type_text}</tspan></text>'
@@ -577,17 +575,17 @@ def make_svg(
 
     # Title
     svg.append(
-        f'<text x="{canvas_w/2}" y="78" text-anchor="middle" '
+        f'<text x="{canvas_w / 2}" y="78" text-anchor="middle" '
         f'font-family="Arial, Helvetica, sans-serif" '
         f'font-size="62" font-weight="800" fill="#0F172A">'
-        f'{esc(title)}</text>'
+        f"{esc(title)}</text>"
     )
 
     svg.append(
-        f'<text x="{canvas_w/2}" y="125" text-anchor="middle" '
+        f'<text x="{canvas_w / 2}" y="125" text-anchor="middle" '
         f'font-family="Arial, Helvetica, sans-serif" '
         f'font-size="28" fill="#475569">'
-        f'Automatically generated from YAML | root classes: {len(roots)} | total classes: {len(classes)}</text>'
+        f"Automatically generated from YAML | root classes: {len(roots)} | total classes: {len(classes)}</text>"
     )
 
     # Edges
@@ -624,22 +622,22 @@ def make_svg(
     # Footer
     footer_y = canvas_h - 150
     svg.append(
-        f'<rect x="110" y="{footer_y}" width="{canvas_w-220}" height="95" '
+        f'<rect x="110" y="{footer_y}" width="{canvas_w - 220}" height="95" '
         f'rx="20" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>'
     )
 
     svg.append(
-        f'<text x="140" y="{footer_y+38}" '
+        f'<text x="140" y="{footer_y + 38}" '
         f'font-family="Arial, Helvetica, sans-serif" '
         f'font-size="25" font-weight="800" fill="#111827">'
-        f'Layout: unlimited root classes, dynamic canvas, recursive hierarchy.</text>'
+        f"Layout: unlimited root classes, dynamic canvas, recursive hierarchy.</text>"
     )
 
     svg.append(
-        f'<text x="140" y="{footer_y+70}" '
+        f'<text x="140" y="{footer_y + 70}" '
         f'font-family="Arial, Helvetica, sans-serif" '
         f'font-size="22" fill="#475569">'
-        f'Root classes are detected by parent: null. Missing parents are shown as orphan roots.</text>'
+        f"Root classes are detected by parent: null. Missing parents are shown as orphan roots.</text>"
     )
 
     svg.append("</svg>")
@@ -651,12 +649,13 @@ def make_svg(
 # PNG export
 # ----------------------------
 
+
 def try_export_png(svg_path: Path, png_path: Path) -> bool:
-    try:
-        import cairosvg
-    except ImportError:
+    cairosvg_spec = importlib.util.find_spec("cairosvg")
+    if cairosvg_spec is None:
         return False
 
+    cairosvg = importlib.import_module("cairosvg")
     try:
         cairosvg.svg2png(url=str(svg_path), write_to=str(png_path))
         return True
@@ -668,6 +667,7 @@ def try_export_png(svg_path: Path, png_path: Path) -> bool:
 # ----------------------------
 # CLI
 # ----------------------------
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
