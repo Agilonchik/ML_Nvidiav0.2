@@ -1,0 +1,82 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "BS_CL_es",
+      "points": [
+        [
+          417.0,
+          486.0
+        ],
+        [
+          512.0,
+          512.0
+        ]
+      ],
+      "group_id": null,
+      "description": "Beam Support in the End or Start",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAF8AAAAaCAAAAAD0st/2AAAAf0lEQVRIDbXBMRKEMAwEwZn/P3qvzGGLgIBA6pbFAIYPBMIi78KDLAYwfCAQFnkXHkS6hSLSLRSlXShKu1CUdqEo7UJR2oWi9AuH0i8cSr9wKP3CofQLhzIgbMqAsCkDwqYMCJsyIGzKhHBTJoSbMiL8KSPCnzIjXJQZ4aKM+gFXIR8cpBsx3wAAAABJRU5ErkJggg=="
+    },
+    {
+      "label": "BS_CL_es",
+      "points": [
+        [
+          162.0,
+          488.0
+        ],
+        [
+          242.0,
+          512.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAFAAAAAYCAAAAABIcSVwAAAAb0lEQVQ4Ea3BMVIDQQAEMfX/Hz04OGcUYHalfCI/mZd8Ij+Zl/xZfjPkO/mfke/kf0byWE6N5LGcGuWmKTdNuWmSiya5aJKblty05KYlNy15LOeWPCbHljwmx5Y8JseWPCbHlrwt55K35VzkbciZL6ldHxycS1QSAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "Superstructure_CL_cons",
+      "points": [
+        [
+          145.0,
+          425.0
+        ],
+        [
+          512.0,
+          493.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAW8AAABECAAAAABrS+uJAAABrElEQVR4Ae3BC3LiQBAFwar7H/p5EAbx9Vqg6fASnSmfxfASgSCPBAmDhDfJZzG8RCDII0HCIOFN8j8y3JNb4Z/kZeEFMpXhTAKGFwlBNotAkGsRiOwrCISnZCrDmQQMLxKCbBaBINciENlXEAhPyZEchEEIP5GzIBDZKtySTxIekyM5CIMQfiJnQSCyVbglnyQ8JoM8EVbSNgp3ZJAnwkraRuGOgLSZgoQjAWlFIiCtSARpZQRpZURaHZFWR6TVUVohpRVSWiGlFVJaIaUVUlohpRVSWiGlFVJaIaUVUlohpRVSWiGlFVJaIaUVUlqdKK1OlFYnSisTlFYmiLQK4UCkVQgHIq1AWIi0AmEh0uYLRyJtuvBNpE0XvgnSJgsngrTJwomAtKnCmYC0qcKZDNImCitZSJsmrGQhbZqwkiNps4SVHEmbJazkRNoU4YKcSJsiXJATaTOES7KStrtwRVbSdheuyCX5s8JCfi9sJHsLN+SS/FlhIb8XNpK9hRtyTd4QkLCQgzDIIjTkmrwhIGEhB2GQRWjILfml0DaTJwyDDKHtRZ4wDDKEtpcvlfBiXHwfrGwAAAAASUVORK5CYII="
+    },
+    {
+      "label": "Other_CL_sky",
+      "points": [
+        [
+          78.0,
+          0.0
+        ],
+        [
+          407.0,
+          241.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAUkAAADxCAAAAABjDxrYAAAE4klEQVR4Ae3BAUIaQRAF0ar7H/rHqEGU2dkeULNAv6e8CCBvAgiECgMC4ROJXAjHId8gfFBeBJA3AQRChQGB8IlELoTjkG8QPiibwivDJvkl4UTOBSSAvAvyT+QnhQ/KpvDKsEl+STiRcwEJIO+C/BP5SeGD0q4XTpR2vXCitOuFE6VdL5wo7QbhH6XdIrxT2i3CO6XdJLxR2k3CG5F2k/BKpN0kvBKk3Sa8EJB2mwAC0m4TQEDabQIISLtNAHkh7SYB5IW0mwSQv6TdJCB/SbtJQP6SdpOAvJJ2i4C8knaLgLyTdr2AvJN2vYD8I+1qATkj7ToBOSPtOgE5J+0qATkn7SoB+UTaNQLyibRrBOQzaVcIyBfS1gXkC2nrAvKVtGUB+UrasoBckLYqIBekrQrIgLQ1ARmRtiQgI9KWBGRM2oogY9JWBNkirS7IFml1QbZIqwuyTVpVkG3SqoJMSKsJyIS0moDMSCsJyIy0koDskLYvILuk7QqyS9quIPuk7QmyT9qeIPuk7QmyT9qeIAXSdgQpkLYjSIG0HUEKpO0IUiBtR5AKaXNBKqTNBamQNhekQtpckAppc0FKpE0FKZE2FaRE2lSQEmlTQUqkTQUpkTYVpETaVJAaaTNBaqTNBKmRNhOkRtpMkBppM0FqpM0EqZE2E6RG2kyQGmkzQWqkzQSpkTYTpETaVJASaVNBSqRNBamRNhOkRtpMkBppM0FqpM0EqZE2E6RG2kyQGmkzQWqkzQSpkTYTpEjaRJAiaRNBiqRNBCmSNhGkSNpEkCJpE0GKpE0EKZI2EaRI2kSQKmnbglRJm4hUSZuIVEmbiFRJm4hUSZuIVEmbiFRJm4iUSdsWKZO2LVImbVukTNq2SJ20TZE6aZsiZdK2RcqkTUiZtAmpk7ZN6qRtkzpp26RO2japk7ZN6qRtkzpp22SBtE2yQNomWSBtkyyQtkkWSNskC6RtkgXStkQWSNsSWSBtS2SFtLEgK6SNBVkhbSzICmljQVZI2xBZIW1DZIW0DZEl0sYiS6SNRZZIG4sskTYWWSJtLLJG2lBkjbShyBppQ5E10oYii+T5RHZFFsnzieyKLJI2JKukjcgqaSOyTNqALJM2IMukDcgyaQOyTtoluYa0LyLXkPZF5EoCEQgn8rwiVxKIQDiR5xX5LfLIgvwWeWRBjkDuXZCjkDsWkKOQOxaQI5K7El7IEcldCS/koORuhL/koORuhL/kqCRyD8IrOTo5uPBKjk4OLrySuyCHFd7IXZDDCm/kbsgRhXdyN+SIwju5K3Iw4R+5P3IY4UTujxxGOJH7JEcQPsh9kiMIH+SOyf8Vzsgdk/8rnJH7Jv9POCf3Tv6P8JncO/k/wmfyGOSXhS/kMcgvC1/IA5FfE76SByK/Jnwlj0Z+Q/hKHo/8uHBBHo/8uHBBHpP8qHBBHpP8qHBBHpUB+SHhgjwqA/JDwgV5ePLtwiV5DvKdwiV5DvKdwiV5HvJNwoA8D/kmYUCei3yDMCDPRb5BGJAnJDcJI/Kc5HphRJ6TXC+MyNOS64QheVpynTAkT03WhSF5arIuDMmTk1VhSBrIgjAkDWRBGJL2RorCkLQ3UhSGpJ0IkR1hTNqJENkRxqRdkIkwJm1EtoQxaSOyJYxJ2yHnwgZpO+Rc2CCtRsKMtBoJM38AXz0CGJ2WGBMAAAAASUVORK5CYII="
+    }
+  ],
+  "imagePath": "1339935_aug_color_a3b1_aug_crop_595b.png",
+  "imageData": null,
+  "imageHeight": 600,
+  "imageWidth": 800
+}

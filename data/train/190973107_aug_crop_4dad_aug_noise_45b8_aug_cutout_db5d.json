@@ -1,0 +1,134 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "BS_CL_intermediate",
+      "points": [
+        [
+          -529.9085261104868,
+          76.138230034142
+        ],
+        [
+          401.22902054998,
+          89.08690861137704
+        ],
+        [
+          403.21297839087583,
+          133.48237801904006
+        ],
+        [
+          362.8725022926596,
+          137.18200046967863
+        ],
+        [
+          362.8725022926596,
+          393.38085517640053
+        ],
+        [
+          316.58015267175574,
+          398.9302888523584
+        ],
+        [
+          316.58015267175574,
+          138.10690608233827
+        ],
+        [
+          273.594399452345,
+          144.58124537095577
+        ],
+        [
+          280.2075922553312,
+          500.6699062449194
+        ],
+        [
+          231.26996551323288,
+          508.9940567588562
+        ],
+        [
+          227.96336911173964,
+          143.65633975829613
+        ],
+        [
+          157.20220611978658,
+          147.35596220893473
+        ],
+        [
+          161.831441081877,
+          507.1442455335369
+        ],
+        [
+          111.57117577918142,
+          508.9940567588562
+        ],
+        [
+          108.26457937768825,
+          149.205773434254
+        ],
+        [
+          -31.27378876532202,
+          155.6801127228715
+        ],
+        [
+          -28.62851164412752,
+          507.1442455335369
+        ],
+        [
+          -92.77648183309432,
+          508.9940567588562
+        ],
+        [
+          -94.76043967399023,
+          154.75520711021187
+        ],
+        [
+          -250.1704705441676,
+          165.8540744621277
+        ],
+        [
+          -240.91200061998683,
+          507.1442455335369
+        ],
+        [
+          -318.2863564149262,
+          508.06915114619653
+        ],
+        [
+          -325.5608684982111,
+          171.40350813808556
+        ],
+        [
+          -529.2472068301882,
+          189.9016203912785
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "polygon",
+      "flags": {},
+      "mask": null
+    },
+    {
+      "label": "Superstructure_CL_cons_under",
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          512.0,
+          61.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAgAAAAA9CAAAAAD+aI58AAACFklEQVR4Ae3BAZKiUBAFwar7H/rtB8cVNpDA1QnU7kyl1RWUVldQWmVKq0xplSmtMqVVprTKlFaZ0ipTWmVKq0xplSk7Iu27KTsi7bsp7WRBTqO0kwU5jdJOFuQ0SjtZkNMorTKlVaa0ypRWV1BaXUFpdQWl1RWUVldQWl1BaXUFpdUVlLYt8vWC0ipTWmVKq0xplSmtrqC0uoLS6gpKqyso7btEHqC07xJ5gNLqCsqGIO3XRSZBNkVmkW2RLQGZBNkVlA1B2q+LTIJsiswi2yJbAjIJsisohNeQVwmDtMcFkOMUwmvIq4RB2uMCyHHy1gTCjQwB+RCRtchK5DGRPQEEAnKAvDWBcCNDQD5EZC2yEnlMZE8AgYAcIO9MhnAl7YiAHBLknckQrqQdEZBDgnwOGcIPaU8L8jlkCD+kPS3Ih5L7gjwnIOFfshZuZAjIQhgEgkyCLASQp0T+W0C+luwJyLZwj6yFmdwTBvlNkasgC+FC/gozmYRBvpbsCci2cI+shZncEwb5TZGrIAvhQv4KM5mEQQqTm7DHMJGFIJMgk4BsicyCrEQmQTZFVoIsBBDCIBCWJCwZFgTCIIXJTdhjmMhCkEmQSUC2RGZBViKTIJsiK0EWAghhEAhLEpYMCwJhkPY0uQozmYQruQgXMoQFCaeQ9jS5CjOZhCu5CBcyhAUJp5D2GgJhj+H9SHsNgbDH8H7+AHlimFzMaewtAAAAAElFTkSuQmCC"
+    }
+  ],
+  "imagePath": "190973107_aug_crop_4dad_aug_noise_45b8_aug_cutout_db5d.png",
+  "imageData": null,
+  "imageHeight": 450,
+  "imageWidth": 800
+}

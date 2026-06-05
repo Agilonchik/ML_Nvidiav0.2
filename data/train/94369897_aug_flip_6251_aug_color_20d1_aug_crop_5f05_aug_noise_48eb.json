@@ -1,0 +1,28 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Superstructure_CL_road",
+      "points": [
+        [
+          329.0,
+          115.0
+        ],
+        [
+          512.0,
+          512.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAALcAAAGNCAAAAAB2k788AAAFdUlEQVR4AdXBAZLcNgIAMfT/H61L6lxJvPaONRpRJIFsJhxkM+EgO8kPR3aSH47sIv9xZBf5jyO7yH8c2UN+cmQP+cmRDeSrIxvIV0eWl9/I8vIbWVm+k5XlO1lZvpN15XtZV76XNeW1rCmvZUH5oywof5QF5Y+ympyR1eSMrCXnZC05JwvJWUcWkrOOrCNnHbKOnHXIOnLWIcvIaYcsI6cdsoS85ZAl5C2HLCBvOmQBedMhC8ibDpkvbzrIfHnTQSbL+w4yWd53kLlywUHmygUHmSvvO5C58r4DmSvvO5CpcsGBTJULDmSiXHOQiXLNQWbJZQeZJZcdZJZcdpBJct1BJsl1B5kiHzlkinzkkAnyoUMmyIcOmSCfOjJBPnVkgnzqyPPysSPPy8eOPC43yONygzwtNzjytNzgyNNygyMPyx2OPCx3OPKo3OPIo3KPI0/KTY48KTc58qDcJg/KbfKg3CbPyX3ynNwnz8i98ozcK8/IvfKM3CvPyL3yiNwsj8jN8oTcLU/I3fKA3C4PyO0yXAbIcBkgw2WAjJYRMlpGyGgZIaNlhAyWITJYhshgGSJjZYyMlTEyVAbJUBkkQ2WQDJVBMlCGyUAZJgNlmIyTcTJOxsk4GSfjZJyMk3EyTsbJOBknw2SgDJOBMkwGyjAZKMNkoAyTgTJIhsogGSqDZKiMkNEyQkbLCBktI2S0DJDhMkCGywAZLvfLeLlfxsv9Ml7ul/FyszwiN8sjcqM8JjfKY3KjPCa3yYNymzwoN8mjcpM8KjfJo3KTPCo3yaNyjzwr98izco88K/fIs3KLPCy3yMPyuTwvn8vz8rk8L5/L8/K5PC8fywT5WCbIhzJFPpQp8qFMkQ9linwoU+QjmSQfyST5RGbJJzJLPpFZ8onMkk9klnwg0+QDmSYfyDT5QKbJBzJNPpBp8oFMk+syT67LPLksE+WyTJTLMlEuy0S5LBPlskyUyzJRLspUuShT5ZrMlWsyV67JXLkmc+WazJVrMleuyVy5JnPlmsyVSzJZLslkuSKz5YrMlisyW67IbLkis+WCTJcLMl2uyGy5IrPlisyWKzJbrshsuSKz5YrMlrdlAXlbFpD3ZA15T9aQ92QNeU/WkPdkDXlLFpG3ZBF5SxaRt2QReUsWkbdkEXlLFpG3ZBF5SxaRN2QZeUOWkTdkGXlDlpE3ZBk5L+vIeVlHTstCcloWktOykJyWheS0LCSnZSE5LQvJWVlJzspKclKWkpOylJySxeSULCanZDE5JYvJKVlMzshqckZWkzOympyR1eSMrCZnZDU5I6vJGVlNzshqckZWkzOymvxBlpQ/yJLyB1lSXsua8lrWlNeypryWNeW1rCmvZU15LWvKS1lUXsqi8lIWlZeyqLyUReWlLCovZVF5KYvKS1lUXsqi8lIWlVeyqrySVeWVrCqvZFV5JavKK1lVXsmq8kKWlReyrHwrC8u3srB8JyvLd7KyfCcryzeytHwjS8s3srR8I0vLN7K0fCNLyzeytPxe1pbfy9rye1lbfi9ry+9lbfm9rC2/yvryq6wvv8r68otsIL/IBvKLbCC/yAbyVXaQr7KDfJUd5KvsIF9lB/kiW8gX2UK+yBbyRbaQL7KFfJEt5ItsIV9kC/kiW8hPson8JJvIT7KJ/CSbyE+yifwkm8hPson8JJvIT7KJ/Fd2kf/KLvKv7CP/yj7yr+wj/8hG8o9sJP/IRvKPbCQ/ZCv5IVvJD9lKfshW8kO2kh+ylfyQreT/spf8X/aSv2U3+Vt2k79lN5ENRTaUv2Q7+Uu2E9lQZEORDUU2FNlQsqNkR8mOkh2VLZUtlS2VLZUtlS2VLZUtlS2VLSU7SnZUtlS2VLZUtvQ/5HY94HRtqMQAAAAASUVORK5CYII="
+    }
+  ],
+  "imagePath": "94369897_aug_flip_6251_aug_color_20d1_aug_crop_5f05_aug_noise_48eb.png",
+  "imageData": null,
+  "imageHeight": 448,
+  "imageWidth": 800
+}

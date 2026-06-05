@@ -1,0 +1,46 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Superstructure_CL_road",
+      "points": [
+        [
+          300.0,
+          0.0
+        ],
+        [
+          406.0,
+          448.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "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"
+    },
+    {
+      "label": "Obstacle_CL_water",
+      "points": [
+        [
+          200.0,
+          192.0
+        ],
+        [
+          301.0,
+          301.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAGUAAABtCAAAAACdRPB+AAABy0lEQVRoBb3BCWLaQAAEwe7/P3qCtdYB9hoEmlTJAwkbwyVkSiBcQuYEwhXkgQQQgkC4gszIIlxAZuQofEJm5EF4m8zIo/AumZGfwntkRn4V3iCPDDcyE86TOwLhi8yE0+RAhgAyF06SA1kE5G/hFNnJEJAnwhkySEBWQf4WTpBBzgqvk5VsIs+F14m8L7xG+Uh4hciHwlMiHwsrGcIdESINYSULgcjFwjcBgSDXC4NIUVgoTWGhNIWFSE8YRCoCyCKI1EWkLiJ1Uf4DkbqI1EWkT6RPpE+kT6RPpE+kT6RPkDpB6gSpE+kTpC2CtEVA2gSkTUDKIiBtciNlciNdkRvpitxImXyRLvkiVZGFNEUW0hQZpCgySFFkkKLIIEWRb9ITGaQoMkhRZJCiyDfpiQxSFBmkKLKSmshKaiI7KYmspCaykprITkoiOymJbKQlspGWyE5KIhtpiaykJrKSmshKaiIrqYmspCayk5LIRkqCbKQkyEY6ArKRjoBspCKA7OR64YscyNXCQg7kQmEnB3KRcE+O5GPhF3IkZwWB8De5I68LL5N78lQ4TR4JBOSn8CaZkHvhAzIhd8InZEaG8DmZkZtwCZmRm3CJf6BSbIHjwuw3AAAAAElFTkSuQmCC"
+    }
+  ],
+  "imagePath": "126801216_aug_flip_0c87_aug_cutout_8aed.png",
+  "imageData": null,
+  "imageHeight": 449,
+  "imageWidth": 800
+}

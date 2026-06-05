@@ -1,0 +1,72 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Superstructure_CL_road",
+      "points": [
+        [
+          121.41196364404985,
+          257.29778128909084
+        ],
+        [
+          124.1175227224688,
+          449.43682928435055
+        ],
+        [
+          783.5975480870851,
+          451.122259529923
+        ],
+        [
+          782.9211583174803,
+          250.55606030680102
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "polygon",
+      "flags": {},
+      "mask": null
+    },
+    {
+      "label": "Obstacle_CL_water",
+      "points": [
+        [
+          486.0,
+          457.0
+        ],
+        [
+          512.0,
+          512.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAABoAAAA3CAAAAAA3EwX6AAAAc0lEQVQ4EXXBwQnDABAEMU3/Tcd+mcCtlE/+RG6RW+QWuUVukVsyJEMyJENZylKWsiRDMiRDWcpSlmRIhmRIhmRIhmSI3JIhGZIhGZIhGZIhGZIhGSK3yC1yi9wit8gtcovcIrfILXILOYWcQk555JJXDj9KJABvqyHSawAAAABJRU5ErkJggg=="
+    },
+    {
+      "label": "Obstacle_CL_water",
+      "points": [
+        [
+          447.0,
+          0.0
+        ],
+        [
+          512.0,
+          252.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAEEAAAD8CAAAAAANyJYyAAAERUlEQVR4AaXBCaKjIAAFwe77H/oNLpjMDwJilRTySPgmhTwSvkkhT4T/yEamhT9kI9PCH7KTOeGH7GRK+CU7mRJ+yU6mhF9ykLHQIicZCG1ykoHQJifpCzekknvhnlRyL9yTSu6Fe3KRO6FDLnIndMhF7oQOucid0CEXuRM65CJtoUsu0ha65Iu0hC75Ig2hT75IQ+iTL/IrDMgX+RFG5Iv8FYbki/wVhuQiv8KQXOSvMEEu8leYIBf5K0yQSn6ECVJJQxiSShrCkFTSEIakkoYwJJU0hCGppCEMyUlawpCcpCUMyUlawpAcpCkMyUGawpAcpCkMyUHawogcpC2MyEHawogcpC2MyEmawoicpCUMyUlawpAcpCkMyUGawpCcpCmMyEmawoicpCmMyEmawoicpCmMyEmawohU0hJGpJKmMCCVNIUBqaQpDEglTWFAKmkKA1LJjdAlJ7kVeuQk90KHnORe6JCD9IR7cpCO0CEH6QgdspOO0CM76Qg9spGu0CEb6QodspGu0CEb6QhdspGO0CUbuRf6ZCO3woAUci8MSCH3woAU0hH6BKQn9AlIT+gTkI4wICAdYUBAOsKAgHSEAQG5F0ZEesKISE8YEekJIyIdYUikIwyJdIQhkTthhsiNMEXkRpgi0hQmKVWQKkwTaQjTRBrCNJGGME1A/hMeEZD/hEcE5Et4SECq8JyAVOE5AanCcwJyCgukkE1YIoVswhIBOYUFAnIKCwRkF5YIyC4sEZBdWCKFbMISKWQTlkghm7BECtmEJVLIJiyRQjZhiRSyCUukkE1YIoVswhIB2YUlUsgmLJFCNmGJFLIJSwRkF5YIyC4sEZBdWCIgu7BEQHZhiYBU4TkBqcJzIl/CYyIf4TmRj/CcyEd4TuRLeEzkW4TwhMi3COEJkV9hnkhLmCXSEmaJnAJyCZNETgHkEuYISFOYIiBNYYqAtIUZAtIWZghIW5ghIDfCBAG5F0akkHthQAq5FwakkI7QJ4X0hC4ppCd0SSFdoUcOMhBuyEkGQpucZCC0SSUDoUkqGQktUslIaJFKxsIvqWRC+CGVzAn/k0rmhP9JJbPCN6lkWvgilUwLX+Qi08KHXGRa+JCLTAsfcpFp4UMuMi18yEWmhQ+5yLTwIReZFy5ykXnhIhd5JuzkIs+EnVTyUNhJJQ+FnVTyUNhJJQ+FnVTyUNjJSR4LGznJY2EjB3kubGQnC8JGdrIgbGQnC8JGNrIibGQjK8JGNrIibKSQNaGQQtaEQgpZEwoBWRQKAVkUCgFZFUBAVgUQkGUBkRcCIi8ERF4IKK8E5Z0o70R5J8o7Ud6J8k6UV4LIKxF5JVLIC1LIC1LIC1LIC1LIC7KTZbKTZbKTZbKTZbKTZbKTZXKQVXKQVXKQVXKQVXKQVXKQVXKQVXKSRXKSRXKSRXKSRVLJiiCVrAjyH2kJO/lf2Mgfcgl/ySZ8+wdBTu4TcXsofwAAAABJRU5ErkJggg=="
+    }
+  ],
+  "imagePath": "191956898_aug_color_3d0f_aug_crop_ac93.png",
+  "imageData": null,
+  "imageHeight": 532,
+  "imageWidth": 800
+}

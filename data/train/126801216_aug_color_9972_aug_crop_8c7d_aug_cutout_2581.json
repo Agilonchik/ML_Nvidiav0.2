@@ -1,0 +1,46 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Superstructure_CL_road",
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          115.0,
+          512.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAHMAAAIACAAAAACUAQx8AAAE2klEQVR4Ab3BAQ0AMBDEIOpf9C8zcVCGzleGzleGzleGzleGzleGzleGzleGzlemDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUIbOV4bOV4bOV6YOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqULaOsnWUraNsHWXrKFtH2TrK1lG2jrJ1lK2jbB1l6yhbR9k6ytZRto6ydZSto2wdZesoW0fZOsrWUbaOsnWUraNsHWXrKFtH2TrK1lG2jrJ1lK2jbB1l6yhbR9k6ytZRto6ydZSto2wdZesoW0fZOsrWUbaOsnWUraNsHWXrKFtH2TrK1lG2jrJ1lK2jbB1l6yhbR9k6ytZRto4ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKWOnjJ0ydsrYKXNlrsyVuTJX5spcmStzZa7MlbkydsrYKXNlrsyVuTJX5spcmStzZa7MlbkyV+bKXJkrc2WuzJW5MlfmylyZK3NlrsyVuTJX5spcmStzZa7MlbkyV8ZOGTtl7JSxU8ZOGTtl7JSxU8ZOGTtl7JSxU7aOsnWUraNsHWXrKFtH2TrK1lG2jrJ1lK2jbB1l6yhbR9k6ytZRpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZeh8Zeh8Zeh8Zeh8Zeh8ZepQpg5l6lCmDmXqUKYOZepQhs5Xhs5Xhs5Xhs5Xhs5Xhs5Xhs5Xhs5Xhs5Xhs5Xpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZeh8Zeh8Zeh8Zeh8Zeh8Zeh8Zeh8ZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQpg5l6lCmDmXrKFtH2TrK1lGmDmXqUKYOZepQpg5l6lCmDmXqUKYOZepQto6ydZSto2wdZesoW0fZOsrWUbaOsnWUraNsHWXrKFvHA0iB0UGiqqplAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "Obstacle_CL_water",
+      "points": [
+        [
+          113.0,
+          0.0
+        ],
+        [
+          258.0,
+          255.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAJEAAAD/CAAAAADUTWvVAAAEh0lEQVR4Ac3BAUJaSxZAwTr7X/QdcfLMQ0kIX7C7Kj8hb4YwLmLclJ+QN0MYFzFuyk/ImyGMixg35fVyGPfl9XIY9+VV8tW4L6+Sr8Z9eZV8Ne7LK+S2cV9eIbeN+/J8+ZNxX54vfzLuy/PlT8Z9ebb82bgvz5Y/G/fliXLHuC9PlDvGfXme/IPxLuO2PE/+wXiXcVueJ/9gvMu4Lc+SfzH+LxfjqzxL/sX4v1yMr/Ic+TfjTX4bn+Q58m/Gm/w2Pslz5N+MN/ltfJInyAPGmxzGJ3mCPGC8yWF8km/LQ8abfBjX8m15yHiTD+NaviuPGLkyiHHId+URI1cGMQ75rjxi5MogxiHfk+cYh3xPnmMc8j153OTaOMn35HGTa+Mk35PHTa6Nk/xneYGR/ywvMPLf5FXy3+RV8ri8zsjj8jojj8vrjNyUD+NKXmrkpnwYV/JSI9eyzISRa1lmwsi1LDNh5Cw/b+TN+CVn+Xkjb8YvOckaQy4GOckaQy4G+ZANjHzIBkY+ZAMjH7KFfMgW8iFbyIdsIR+yhZxkuZGTLDdCDuMi64yQw7jIOiOykRHZyIhsZEQ2MiIbGZGNjMhGRmQjo2ymbCaykRHZyIhsZEQ2MiIbGWUro2xllK2MspVRtjLKVkbZyihbGWUro2xllK2MspVRtjLKVkbZyihbGWUro2xllK2MspOh7GQoOxnKToayk6HsZCg7GcpWRtnKKFsZkX0MkX0MkX0MkX0MZSODspFB2cigbGRQNjKIbGMQ2cYgso1B2cigbGRQtjEuyjbGRWQT4yKyiXER2cS4iGxiXEQ2MS7KNsZF2ca4KNsYF2UX413ZxXgX2cN4F9nDeBfZw3gX2cH4JbKD8UtkB+OXyA7GL5ENjENkA+MQ2cA4RDYwDpENjENkA+MQ2cA4RDYwDpENjENkA+MQWW78Fllu/BbZwDhENjAOkQ2MQ2QD4xDZwDhENjAOkQ2MQ2QD4xBZbvwWWW78FtnAOEQ2MA6RDYxDZAPjENnAOERWGyeR1cZJZLVxElltnERWGyeRpca1yFLjWmS1cRJZbZxEVhsnkdXGSWS1cRJZalyLLDWuRZYa1yJLjWuRpca1yGLjLLLYOIssNs4ii42zyFLjWmSpcS2y1LgWWWycRRYbZ5HVxklktXESWW2cRFYbJ5HVxklktXESWW2cRFYbJ5HVxklktXESWW2cRFYbJ5GlxrXIUuNaZKlxLWStcRay1jgLWWuchaw1znKRlcZZLrLSOMtFVhpnuchK4ywXWWmc5V0WGmd5l4XGWd5loXGWQ9YY13LIGuNaPmSF8Uk+ZIXxSb7ITxqf5Iv8pPFJvshPGp/ktvyQ8Uluyw8Zn+Tv8lLji/xdXmp8kb/LS40v8pBcDHmK8UUekoshTzG+yLfkW8ZX+ZZ8y/gqz5JHjVvyLHnUuCXPkkeNW/J0+YtBLsZtebr8xSAX47a8SG4a9+RFctO4Jy+Sm8Y9eZXcMu7Jq+SWcU9eLh/GfXm5fBj35Ufk3bgvPyLvxn35EXk37suPyLtxX35E3o37/gfaaiEY0VLFvgAAAABJRU5ErkJggg=="
+    }
+  ],
+  "imagePath": "126801216_aug_color_9972_aug_crop_8c7d_aug_cutout_2581.png",
+  "imageData": null,
+  "imageHeight": 449,
+  "imageWidth": 800
+}

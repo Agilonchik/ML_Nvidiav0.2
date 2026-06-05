@@ -1,0 +1,118 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "BS_CL_es",
+      "points": [
+        [
+          217.0,
+          277.0
+        ],
+        [
+          351.0,
+          383.0
+        ]
+      ],
+      "group_id": null,
+      "description": "Beam Support in the End or Start",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAIYAAABqCAAAAABclHa0AAAB90lEQVRoBc3BC2LiMBAFwe77H/otvySAjS2N8MpV0kU+CDcCoY0BJFxIDzlGpIccRDrIUaSDHEXayWGknRxG2slhpJkcR5rJcaSZHEdayYGkkRxJ2sih5InhQf4vuZOp5EomE5DpBGQ6QeYTZD6RExA5AeUMlDNQzkA5gSgnEOUEopxAlBOIcgJRTiDKCUSZLyjzBWW+oMwXlOkCynQBZbqAMl1AmS6gTBdQZgugzBZAkLkCCDJXAAGZKVzIhcwTruRKpglXciOzhCu5kw1BDhJu5E4+ChdyjHAjd/JJuJEjhDt5kFXhmXxXeJAHWRNeyTeFH/JDlsIb+aLwS/7Iu/BGvif8kSfyKizIl4Rn8kp+hQ9kXHghC3IRNsiw8EL6ybDwSrrJsPBGesm48EZ6ybDwTrrJqPBOesmosCCdZFhYkF4yKCxJPxkSlqSfjAgrpEAGhBVSIAPCCqmQqrBKKqQorJMKKQrrpET6hc+kRLqFDVIh/cIGqZB+YYNUSLewRQqkW9gkBdIrbJMC6RR2SIX0CTukQrqEPVIhPcIuKZEOYZfUSLOwT4qkUWggRdImtJAiaRKaSJE0CI2kSPaFVlIle0IzKZNtoZ3UyZbQQUbIR6GHDJEPQhcZI2tCJxkkS6GXDJMXoUCGyZ9QI18gd6FKvkIIA/4BCZlgg4Bc5dUAAAAASUVORK5CYII="
+    },
+    {
+      "label": "BS_CL_es",
+      "points": [
+        [
+          537.0,
+          278.0
+        ],
+        [
+          626.0,
+          332.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAFkAAAA2CAAAAACJwmr8AAABB0lEQVRYCa3BC2JaMRAAMc39D72FpI/+EgyupfyU58ab8ikvGG/Ih+wbX8qHHDG5TO5yXu5yXu5y3OQm501uct7kJodMLpObnDFymdzkjJHLhBwyeZiQAwZ5GCEHDPIwQg4Y5GGEnDDkYUSOGPllRM4bIkeMPAyREwa5DJH/Nz7lwyCybXwh4yayZTyXbBkLyY6xkuwYK8mOsZLsGCvJjrGS7BgryY6xUraMlbJlrJQtY6XsGQtlz1goe8ZC2TMWyp6xUPaMhbJnLJQtY6XsGQtlz1hIfhqXLI2V5G78Ic+NpQjjH/neWMu38p3xgjyRv42X5bn8ZrwhK7mMd2Qtd+M9eUnGm34AbQBFORWUp/AAAAAASUVORK5CYII="
+    },
+    {
+      "label": "Obstacle_CL_water",
+      "points": [
+        [
+          208.0,
+          331.0
+        ],
+        [
+          657.0,
+          599.0
+        ]
+      ],
+      "group_id": null,
+      "description": "Obstacle on the structure class water",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "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"
+    },
+    {
+      "label": "Superstructure_CL_cons",
+      "points": [
+        [
+          247.0,
+          242.0
+        ],
+        [
+          644.0,
+          281.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAY0AAAAnCAAAAADWPEsxAAABC0lEQVRoBe3BiVbCQAAEwe7//+gxxAMI4AGYXX1TJU8iYSFBrguyCHcz/GtyP3lI+A65EK4x/HnyOYEgvyGyiGwEWUTuEoTwAAlIODLsQG6Tfy1ckC9FtiIQ5Ch8QQgLWYWVXCX1JOGE3BRAPkhAapCAgNQEAoLUFIJITSIiNYmI1CyUmoZS01BqGkpNQ6RmIVKzEKlZiNQsBKlJCEjNQUBqDrKQmoK8kRot8k5qsMgHqbEiR1JDRU5IDRTklNQwATkjNUgAOSc1QjiQc1IDhJVsSO0tvJEtqX2Fd3JBakfhSK6Q3xHuID8TVvInhFNSt8gqHMhBeCUBeVQ4J/VM8n1hS2oPchAWhlteAM2ENzW3OwIpAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "Obstacle_CL_ground",
+      "points": [
+        [
+          273.0,
+          308.0
+        ],
+        [
+          418.0,
+          416.0
+        ]
+      ],
+      "group_id": null,
+      "description": "Obstacle class ground",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAJEAAABsCAAAAABPvw84AAACWUlEQVRoBc3BC2LiMBAFwe77H/otBEhk8Eeyx3ir5FxCGCKnMoySc0i4MbxI6CHVhMhNEAg3chd6SCmZEeRH6CClZFXYJpVkQ9gklWRT2CCVpENYJZWkR1gjhaRTWCZ1pF9YInVkQFggdWREmCd1ZEiYJXVkTJgjZWRUmCFlZFz4IEVkj/BBisgu4Z3UkH3CO6khO4U3UkJ2C1NSQfYLU1JAjggTcpwcEibkMDkotOQoOSq05CA5LLTkGCkQGnKIVAgNOUQqhIYcISVCQw6QGqEh+0mR0JD9pEZoyW5SJLRkNykSWrKb1AgTspuUCFOyl9QIU7KXFAkTspNUCROyj5QJE7KL1AkTsocUChMyTkqFCRkmtcKEjJJqoSWDpFxoyRipF1oyRM4QGjJEzhAaMkLOEf7IADlZABkgZwtIPzlfkH7yBZFu8hXSS75DOsl3RPpIpXAnHwLSRSqFF3kKL9JBSoWGYUq2Sa2wRjZJsbBGNkmtsEq2SLGwStZJtbBOVkm5sE7WSLmwQVZItbBJFkml0EmWSKHQTZZImTBA5kilMEIaQpBiYYg8yUnCGLmT84QxgvQKMioMEukWfki3MEwZEG7kISBzwhHKgHAnd+FG3oWDlE5hgTTCUUqHMMfwIjehgsiW8E2CrArfJSDLwrfJjSwKGL5J7mRBAMM3yQ+ZFb5PnuRTuIA8yIxwAXmQGeEC8iCfwhXkST6EK8iTvAuXkAf5EC4hD/IuXEMe5EO4hLzIm3AJ+SVT4RLyJO/CJeRBPoRLyC+5CxeTP0K4nPwRwuXkl4T/wD9UcH9vn+/ASAAAAABJRU5ErkJggg=="
+    },
+    {
+      "label": "Other_CL_sky",
+      "points": [
+        [
+          362.0,
+          0.0
+        ],
+        [
+          716.0,
+          137.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAWIAAACJCAAAAAAzw21TAAAC7UlEQVR4Ae3BAUIaURQEwe77H3pCojGgoP8tiwGcKjkmewl3ST4KEk4JBCQsEgggrwLIgRyTbxB5E+SvABKQU+GNfLfwCcMf8gk5IrU/OSK1P/lH6gbkL6mbkFdStyEvpG4j8pvUjQQ5kLqRgBxI3UhADqRuI4CA1G2EAwGp2wgHAlI3EX4TkLqB8EJAan/hlYDUzsI/AlK7CscEpPYUTghI7SicEpDaT3hHQGo34T0Bqb2EDwSk9hHOEJDaRThHkNpDOE+Qul64RJC6WrhIkLpS+ISA1FXCZwSkrhE+JSC1WfiKILVV+JogtVFYIEhtFBYIUtuEFYLUNmGFILVNWCFIbRKWCFKbhCWC1CZhiSC1RVgjSG0QFglSG4RFgtQGYZEgNRdWCVJzYZUgNRdWCVJzYZUgNRdWCVJzYZUgtUFYJEhtEBYJUnNhlSA1F1YJUnNhlSA1F1YJUnNhlSA1FpYJUmNhmSA1FpYJUmNhmSA1FpYJUlNhnUiNhXUiNRbWidRYWCdSY2GdSE2FAZGaCgMiNRQmRGoqDCg1FgaUmgoTSk2FCaWmwoRSU2FCqaEwotRQGFFqKIyI1EwYEamZMCJITYQZQWoizIjUSJgRqZEwI1ITYUikJsKQSE2EIZEaCFMiNRCmRFZE6iCMKTUQxpRaF+aUWhY2UGpZ2ECpRWETkVoRNhKpY+GNHEQgbCfIjxK+mSBPJtwVAXke4e7Ib/LAwn2TP+RBhbsnL+ThRAj3T17IIwkPRF7JYwiPRv6Sexcekvwj9ys8LDkidyg8ODkm9yU8ATkh9yI8Czkl9yA8EXlP/rPwXOQD+V/CM5KP5NuF5yUfyXcKT07OkG8Tnp6cId8i/AhyhtxWQMIPIefIrYQfR86R/YUfSs6SXYUfTM6S3YQfTs6T64U6kPPkSqFeyAVyhVBv5ALZKNQJuUC2CPWeXCIzoc6SS2RdqIvkIvlShFCfkovkU6GWyEVyWahVcpmcCLWFfEFCXeMXLISWkahAI9cAAAAASUVORK5CYII="
+    }
+  ],
+  "imagePath": "1339935_aug_flip_cb9c_aug_noise_6630_aug_cutout_0912.png",
+  "imageData": null,
+  "imageHeight": 600,
+  "imageWidth": 800
+}

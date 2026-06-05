@@ -1,0 +1,93 @@
+classes:
+    - id: 0
+      name: "Background"
+      parent: null
+      type: "misc class"
+    - id: 1
+      name: "Superstructure"
+      parent: null
+      type: "Main class 1"
+    - id: 2
+      name: "Support"
+      parent: null
+      type: "Main class 2"
+    - id: 3
+      name: "Crossed obstacle zone"
+      parent: null
+      type: "Main class 3"
+    - id: 4
+      name: "Roadway"
+      parent: Superstructure
+      type: "Main class 4"
+    - id: 5
+      name: "Bridge deck"
+      parent: Superstructure
+      type: "Construction of element"
+    - id: 6
+      name: "Safety barrier"
+      parent: Superstructure
+      type: "Construction of element"
+    - id: 7
+      name: "Structure body"
+      parent: Superstructure
+      type: "Construction of element"
+    - id: 8
+      name: "End support"
+      parent: Support
+      type: "Construction of element"
+    - id: 9
+      name: "Intermediate support"
+      parent: Support
+      type: "Construction of element"
+    - id: 10
+      name: "water under bridge"
+      parent: Crossed obstacle zone
+      type: "Contextual zone element"
+    - id: 11
+      name: "river/channel/stream bed"
+      parent: Crossed obstacle zone
+      type: "Contextual zone element"
+    - id: 12
+      name: "ground valley under bridge"
+      parent: Crossed obstacle zone
+      type: "Contextual zone element"
+    - id: 13
+      name: "slope or embankment cone"
+      parent: Crossed obstacle zone
+      type: "Contextual zone element"
+    - id: 14
+      name: "road under bridge"
+      parent: Crossed obstacle zone
+      type: "Contextual zone element"
+    - id: 15
+      name: "railway under bridge"
+      parent: Crossed obstacle zone
+      type: "Contextual zone element"
+    - id: 16
+      name: "sidewalk"
+      parent: Superstructure
+      type: "Construction element"
+    - id: 17
+      name: "Road barrier"
+      parent: Superstructure
+      type: "Construction element"
+    - id: 18
+      name: "Expansion joint"
+      parent: Superstructure
+      type: "Construction element"
+    - id: 19
+      name: "Deck lighting equipment"
+      parent: Superstructure
+      type: "Operational element"
+    - id: 20
+      name: "Large visible bearing part"
+      parent: Support
+      type: "Support interface element"
+    - id: 21
+      name: "Bridge approach"
+      parent: Roadway
+      type: "Roadway interface element"
+    - id: 22
+      name: "Approach embankment"
+      parent: Roadway
+      type: "Roadway interface element"

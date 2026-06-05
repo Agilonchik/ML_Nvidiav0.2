@@ -1,0 +1,28 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Superstructure_CL_road",
+      "points": [
+        [
+          244.0,
+          157.0
+        ],
+        [
+          590.0,
+          450.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "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"
+    }
+  ],
+  "imagePath": "49031046_aug_flip_6c17_aug_color_bcf1_aug_cutout_5b9d.png",
+  "imageData": null,
+  "imageHeight": 450,
+  "imageWidth": 800
+}

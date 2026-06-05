@@ -1,0 +1,46 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Other_CL_sky",
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          512.0,
+          395.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAgAAAAGLCAAAAACUjHWgAAAHmklEQVR4Ae3BCWIVRxJAwXj3P3QNGBszZtPSX6iVGZFP8sWx/oyOPySf5Itj/Rkdf0jIV4dwrEfL8bd8dvyt4xsdPxbHVzm+Csc/wvG3cPwtQn7r+CyOh8nxj3xyfJFPjr/lk+OLOL6XHzryMyc/ceQnTr465KsjXx15r0Iuc/LVIf86+erIehdCLnPy1SH/OvnqyHoXQtZYIWuskDVWyBorZI0VssYKWWOFrLFC1lgha6yQNVbIGitkjRWyxgpZY4WssULWWCFrrJA1VsgaK2SNFbLGClljhayxQtZYIWuskDVWyBorZI0VssYKWWOFrLFC1lgha6yQNVbIGitkjRWyxgpZY4WssULWWCFrrJA1VsgaK+TPOll/SsgaK2SNFbLGClljhayxQtZYIWuskDVWyBorZI0VssYKWWOFrLFC1lgha6yQNVbIGitkjRWyxgpZY4WssULWWCFrrJA1Vsi7dbIeKmSNFbLGClljhayxQtZYIWuskDVWyBorZI0VssYKWWOFrLFC1lgha6yQNVbIGitkjRWyxgpZY4WssULWWCFrrJA1VsgaK2SNFbLGClljhayxQtZYIWuskDVWyBorZI0VssYKWWOFrLFC1lgha6yQNVbIGitkjRWyxgpZY4WssULWWCFrrJA1VsgaK2SNFbLGClljhayxQtZYIWuskDVWyBorZI0VssYKWWOFrLFC1lgha6yQNVbIGitkjRWyxgpZY4WssULWWCFrrJA1VsgaK2SNFbLGClljhayxQtZYIWuskDVWyBorZI0VssYKWWOFrLFC1lgha6yQNVbIGitkjRWyxgpZY4WssULWWCFrrJA1VsgaK2SNFbLGClljhayxQtZYIWuskDVWyBorZI0VssYKWWOFrLFC1lgha6yQNVbIGitkjRWyxgpZY4WssULWWCFrrJA1VsgaK2SNFbLGClljhayxQtZYIWuskDVWyBorZI0VssYKWWOFrLFC1lhlTRayxgpZY4WssULWWCFrrJA1VsgaK2SNFbLGClljhayxQtZYIWuskDVWyBorZI0VssYKWWOFrLFC1lgha6yQNVbIGitkjRWyxgpZY4WssULWWCFrrJA1VsgaK2SNFbLGClljhayxQtZYIWuskJ86/pX18YT8zPF/sj6akJ84/ivrYwn5ieO/sj6WkB86fiTrIwn5geMnsj6QkO8dP5X1cYR87/iprI8j5DvHL2R9GCH/7/idrA8i5FvH72V9EOX/HU+R9TGU/3c8RdbHEPKN4ymyPoaQfx1Pk/UhhHx1PFHWhxDy1fFEWR9CyD+OJ8v6CEL+djxD1gcQ8sXxLFn3F/LF8SxZ9xfyl+N5su6vfHE8W9btlb8cL5B1d+Uvxwtk3V35y/ECWXcXwvESWTeXV8m6t7xW1o3ltbJuLK+XdVu5RNY95RpZt5RrZN1SLpJ1R7lK1g3lMln3k8tk3U8uk3U/uU7W7eQ6WbeTC2XdTS6UdTe5UNbd5EJZd5MLZd1NLpR1N7lS1s3kSlk3kytl3UyulHUzuVLWzeRSWfeSS2XdS66VdSu5Vtat5FpZt5JrZd1KLpZ1J7lY1p3kalk3kqtl3Ugul3UfuVzWfeRyWfeR62XdRq6XdRu5XtZt5HpZt5HLZd1Hrpd1G7le1m3kelm3ketl3UYul3UfuVzWfeRyWfeRy+Wlji+y3kqul5c5/pX1JnK9vMjxray3kOvlRY5vZb2FXC8vcnwr6y3kenmB4z+y3kA+C8dV8nzH97IeLp+F4yp5vuMHsh4tn4XjKnm+4weyHi2f5JPjKnm244eyHiyf5JPjKnm248eyHurksxxXyjMdP5H1OId8luNKeabjJ7Ie55DHyLMcP5P1GMdneYw8x/FT+bHjb1nPcfLZ8UUeI89x/Fx+4PhW1pMc38lj5DmOn8sPHN/KepLjO3mQPMPxC/nO8V95gJOP5PiBPEqe7Pil/L/jR3Kx47Pc3fFJx4/lYfJEx2/kW8fP5CLHv3Jrx6/lcfI0x+/kX8cv5BVO/nL8R+7r+LU8Tp7m+J386/iFvMLJX47/yH0dv5bHydMcT5C/HL+RFzl+KTd1/EYeLL9zXCzPdfxWbuj4rTxefuV4lDzN8RS5neP38nj5leNR8jTHU+R2jt/LW8jPHW8iP3Y8WW7m+L28nXzveDP5geMZcivHE+Rt5RvHn5F/HM+SOzmeIG8r3zj+jPzjeJbcyfEEeXM5biu3cTxF1vPkHo4nyXqu3MDxNFnPl/fueKKs58t7dzxR1gvkfTueKutF8l4dz5H1Qnl/jufKeqG8P8dzZb1U3pfjBbJeLO/I8SJZr5T34HiZrFfKe3C8TNar5Y87XijrCvmjjpfKukj+mOPFsq6Ut3e8QtaV8vaOV8h6qDzY8SpZD5YHOl4p6w3kQY5XynoDeZDjlbLeRh7geK2st5KrHa+W9WZysePVst5MLna8WtYbyoWOC2S9pVzluETW28oXJ69xXCPrbeWLk9c4rpH11sLxWV7muEzWn5RnO66U9WflWY5rZf1pebLjall/Wp7suFrWH5cnOi6X9eflCY5HyHoP8hvHY2S9B/mN4zGy3oX8x0HHo2W9E+F4a/8DiczF2DhLqSoAAAAASUVORK5CYII="
+    },
+    {
+      "label": "Superstructure_CL_road",
+      "points": [
+        [
+          208.0,
+          415.0
+        ],
+        [
+          512.0,
+          512.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAATAAAABhCAAAAAB0NaLJAAAB6klEQVR4Ae3BAXKbMABFwffuf+jfqZ2OndoJGCSQhHZlCPIlVCb9MXwnD6Eu6Y/hQf4XapL+GB7kf6Em6Y/hTt4L9Uh3ZIVQifRGVgl1SG9klVCH9EVWCzVIT+RToTDph2wQypJ+yAahLOmBbBeKkvbJTqEcaZsUEUqRtkkpoQhpm5QSipCmSVFhN2mYFBd2kmZJJWEHaZZUEnaQVklFYStpldQVNpEmyRHC56RJcoTwOWmHBDlY+Iw0Q84RPiHNkDOFdaQVcr6wSFoh5wuLpAHSjvA7OZ00KPxATiatCu/IyaRV4R05lbQsvJLzSBfCMzmF9CQ8yCmkJ+FBDiZEehP+kYNJn8KdHEw6FpBjSd8ix5K+RQ4lvZPDyAjkIDIGOYiMQQ4ho5DKZCxSjwxI6pEBSTUyIqlGRiRVyKikChmV1CDDkgpkXFKaDE0Kk7FJYTI2KUmGJ3vJpchOci2yk1yL7CTXIvvIxch2ckGynVyQbCZXJFvJJclGck2yhVyWbCGXJZ+TC5N1ZLqRdWS6kXVkupFVZLqTVWS6kyVCZPoiS4TI9EUWyPRMFsj0TBbI9Ex+JtML+ZlML+SVBGR6R76T6VfyRKYl8kSmJfJEpiXyINMiuZEg0zK5kSDTMrmRaR35S6aVlOkTfwB1RjaYPgakRwAAAABJRU5ErkJggg=="
+    }
+  ],
+  "imagePath": "187609864_aug_flip_c01e_aug_crop_417c_aug_cutout_033f.png",
+  "imageData": null,
+  "imageHeight": 599,
+  "imageWidth": 800
+}

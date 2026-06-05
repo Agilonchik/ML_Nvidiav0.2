@@ -1,0 +1,36 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Superstructure_CL_road",
+      "points": [
+        [
+          582.6315789473684,
+          197.42105263157896
+        ],
+        [
+          592.1052631578948,
+          398.4736842105263
+        ],
+        [
+          152.1052631578948,
+          397.42105263157896
+        ],
+        [
+          142.63157894736844,
+          195.31578947368422
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "polygon",
+      "flags": {},
+      "mask": null
+    }
+  ],
+  "imagePath": "210295370_flipped.png",
+  "imageData": null,
+  "imageHeight": 598,
+  "imageWidth": 800
+}

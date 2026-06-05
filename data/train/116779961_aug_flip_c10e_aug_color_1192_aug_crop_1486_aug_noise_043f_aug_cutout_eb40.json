@@ -1,0 +1,100 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Obstacle_CL_water",
+      "points": [
+        [
+          65.0,
+          309.0
+        ],
+        [
+          512.0,
+          512.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAb8AAADLCAAAAADbvMLNAAADdUlEQVR4Ae3BC3LbSBQEwar7HxrrWCtsySIxBDGfN6HOlO3IQXyQ7chBfJB9yB8HyCcHP5RsQFoOfijZgFxx8IPIBuSKgx9EtiB9HHwicPCLwME5DyqSPchmDkDg4DM56Er2IJs5AIGDz+SgK9mExAOyCYkHZBMSD8g2JL6RbUh8I9uQ+Ea2IfGNbEPiG9mCxEOyBYmHZAMST8gGJJ6QDUg8IfVJPCPVSTwn1Uk8J8VJnJDaJM5IbRJnpDaJM1KZxDmpTOKcVCZxTgqTaJDCJBqkMIkGKUyiQSqTOCeVSZyTwiQapDCJBilMokEKk2iQwiQapDCJBilMokHKkmiSsiSapCyJJilLoknKkmiSsiSapCqJNqlKok2qkmiTkiReIvVIvErKkXiZlCPxMqlG4nVSi8QVUovEFVKKxCVSisQlUorEJVKHxFVShcR1UoXEdVKFxHVShMQbpAiJN0gREm+QCiTeI8tJvE2Wk3ibrCbxPllM4gZZTOIGWUziBllJ4h5ZR+IuWUfiLllG4jZZReI+WUXiPllDogdZQ6IHWUOiB1lCogtZQqILWUKiC5lPoheZTqIbmUyiI5lMoiOZS6InmUiiM5lIojOZR6I3mURiAJlEYgCZQmIImUJiCJlCYgiZQWIMmUBiEBlOYhgZTmIYGU1iHBlLYiQZS2IkGUliLBlJYiwZSWIsGUdiNBlEYgIZRGICGURiAhlDYgYZQmIKGUJiChlAYhLpT2IW6U9iFulPYhbpTWIe6U1iHulLYibpSWIu6UliLulIYjLpRmI66UViPulFYj7pRGIB6UJiCelCYgnpQWIN6UFiDelBYg3pQWINuU9iFblPYhW5T2IVuU9iFblPYhW5T2IVuU9iFblNYhm5TWIZuU1iGblNYhm5TWIZuUtiHblO4AAkVpOrJOqQqyTqkIskCpFLJEqRSyRKkUskSpELJIqRCySKkZdJlCOvkqhHXiVRj7xGoiJ5gURR0iRRljRJlCUNEoXJOYnK5JxEZXJOojI5I1GbnJGoTU5IFCfPSVQnz0lUJ89I1CcPSWxBHpHYgzwisQd5QGIT8i+Jfci/JPYh/5LYh3wlsRP5SmIn8pXETuQLia3IFxJbkc8k9iKfSexF/pLYjfwlsRv5ILEh+U1iR/KbxI7kfxJbkl8kNiW/SGxKQGJXSmzsP50jE44G0DGOAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "Superstructure_CL_cons",
+      "points": [
+        [
+          0.0,
+          241.0
+        ],
+        [
+          512.0,
+          262.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAgAAAAAVCAAAAAAVlwknAAAAzUlEQVRoBe3BAW7CMBQFwd37H/rVqYC6ESAEVhLiPyMnJCtBeqFcyAnJSpBeKBdyXIb7BMJCBguTEZAyLQEp01LKzJQyM6XMTBZSJiVXUiYkN1LmIzdS5iNrUiYij0knNBLuk/KV5DHphEbCfVK+kowj5xWQXlgY/hECyK8gRycDyUChJ02QbYTR5GORp8IbZCAZKPSkCbKNMJp8LPJUeIOMJVcB+RO2I68IOzEspAnSCxuTsxNCTwhHIKGRRdiHnJ0QekI4AgmNLMI+fgCQoigjU7aDeQAAAABJRU5ErkJggg=="
+    },
+    {
+      "label": "BS_CL_intermediate",
+      "points": [
+        [
+          376.0,
+          257.0
+        ],
+        [
+          393.0,
+          305.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAABEAAAAwCAAAAADS9s61AAAAc0lEQVQoFV3BAUoAQQwAscz/H13xEGk3ifwbRP4NyjaUa8o15ZpyTbmmXFOuKdeUa8qjPMqjPMqjPMqjPMqjPCJH5IgckSNyRI7IETkiR+SIHCFbyBayhWwhW8gWsoVsIVvIMiHLhCyTX/kz5JPPIJ98Bj+6KRJPfpjybQAAAABJRU5ErkJggg=="
+    },
+    {
+      "label": "BS_CL_intermediate",
+      "points": [
+        [
+          226.0,
+          257.0
+        ],
+        [
+          247.0,
+          302.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAABUAAAAtCAAAAABkVX+KAAAAiklEQVQoFW3BAXLCQAwAMe3/H+1CMm3DGSlveRl/8paX8ad8Gi/lMCiHQTkMyjLKMsoyyjLKNmWbsk3ZpmxTtilflC/KF5ElskSWyBJZIkvIKeQUcgo5TMhhQg6Tt3yYvOXD5JKnySVPk0s+5JKnySVPk0ueJrc8TG55mNzyb+SWfyO/chvkV26DH+I9IDshaKF8AAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "BS_CL_intermediate",
+      "points": [
+        [
+          76.0,
+          256.0
+        ],
+        [
+          101.0,
+          275.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAABkAAAATCAAAAABAGfnZAAAAS0lEQVQYGW3BAQqEQAwAscz/H91bDkHUJuUynsrXOMrXOMpqlN2U3ZTdlN1EVpFVZDORzUQ2E1mMyNs4Im/jCHkYfzlyG5ccuY3LD9GBERY+D9vdAAAAAElFTkSuQmCC"
+    }
+  ],
+  "imagePath": "116779961_aug_flip_c10e_aug_color_1192_aug_crop_1486_aug_noise_043f_aug_cutout_eb40.png",
+  "imageData": null,
+  "imageHeight": 532,
+  "imageWidth": 800
+}

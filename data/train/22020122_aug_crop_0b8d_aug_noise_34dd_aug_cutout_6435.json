@@ -1,0 +1,82 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Obstacle_CL_ground",
+      "points": [
+        [
+          0.0,
+          271.0
+        ],
+        [
+          52.0,
+          319.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAADQAAAAwCAAAAAB7ggYhAAAA5UlEQVRIDZXBgY2DMADAQHv/of1Rqi9FpZDcyR2B+KJMMQgxGYNADBIflCkGISZjEIhB4oNyFsgQyBCDTPGinAUyBDLEIFO8KBtiUq4kQ4B8iEm5kgwB8iEmZUsMypYYlEWBDIGyKJAhUNYEyJSyKJAXZVEgL8q6AAFlXYCAsijelEXxpiyKN2VNHJQ1cVAWxInyLM6UZ3Gm3IhLyo24pPwUPyjX4jflWvymXIobyqW4oXyLe8qXeKB8iQfKWTxTzuKZchILlEOsUQ6xRvkXq5R/sUqZYoMCsUeB2KMQmxRikxK7/gCDb0U17nvuOAAAAABJRU5ErkJggg=="
+    },
+    {
+      "label": "Superstructure_CL_cons",
+      "points": [
+        [
+          0.0,
+          96.0
+        ],
+        [
+          257.0,
+          257.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAQEAAAChCAAAAADi7FV7AAACqUlEQVR4AeXBC3IaQRAFwar7H/oZwpKMCT4LYmd6ezKlP7kQrkh/ciFckbbknnBB2pJ7wgVpRzYJf0kX8qpwJl3Iq8KZHJ68K5zI4cm7wokck3xAOJFDkQ8LcijyYUGKk31FipN9RYqSQaQeGUnqkZGkAplHKpB5ZBIpQgaTYmQwKUZGkLpkBKlLdiXlyT7kKGQfchTyQXJA8kFyQPIhclDyFmlD3iJtyAukIXmBNCQbSGPyiPQnj0h/cpusQm6TVcj/ZDERkIVFQBYWZW1R1hZlaUFZWlAWFkBZVzhR1hVOlGWFM2VZ4UxZVPhLWVP4oqwpfFGWFL4pSwrflPWEC8p6wgVlPeGCspxwSVlOuKSsJVxRlhKuKUsJ15R1hBuUdYQblGWEW5RFhNuURYTblDWEO5Q1hDuUFYS7lP7CA0p/4QGlv/CA0l94QGkvPKJ0Fx5SugsPKa2FZ5TWwjNKZ+Eppa+wgdJX2EBpK2yhtBW2ULoKmyg9hY2UnsJGSkthK6WlsJXSUdhM6ShspvQTXqB0E16idBNeorQSXqW0El6ltBHeoTQR3qM0Ed6jdBDepnQQ3qYcXvgN5cjCrylHFn5NOYKwG+UIwm6U+sKOlNrCzpTaws6UwsL+lMLC/pSqwhBKUWEMpagwhlJSGEUpKYyiFBTGUeoJAyn1hIGUWsJgSi1hMKWQMJ5SRJhDKSLModQQJlFqCJMoJYRZlPnCRMp8YSJlsjCXMlmYS5kqzKbMFKZTZgrTKdOECpRpQgXKFKEKZYpQhTJDKEMZLlSiDBcqUYYK1ShDhWqUYUJFyhihKGWMUJQyQihLGSGUpQwQ6lL2FkpT9hZKU3YU6lN2FOpT9hAOQ9kgfJOz8ENOwnEpG4RvchZ+yEk4LuWp0JnyVOhM/pEvYSF/AFALjLvpQFYrAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "BS_CL_es",
+      "points": [
+        [
+          224.0,
+          93.0
+        ],
+        [
+          357.0,
+          178.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAIUAAABVCAAAAABCj3jPAAAB6klEQVRoBcXBAWKjMBAEwe7/P3ouJLnY2IIVIOEqmUAWoZtMIIvQTcaTH2Gb4YlcJt/CH1mEB8MzgfAgl8m38EcW4cHwTCA8yBmyISwEwjOBIBC+yCIIBJAzZENYCIRnAkEgfJFFEAggB0gpgDyEL1KQDhKQeaSDBGQe6SBzRTrIXJEOMlWQDjJNWEgHmSYspCTDhTUpyXBhTUoyTEAgvJCSDBXeSUmGCu+kJCOFBinJSKFBSjJG2CQlGSDskZIMEPZISS4KFSnJRaEiJbkidJCKXBF6SEWuCD2kImeFXlKRs0IvKcg54QApyBnhECnIGeEQKchh4SgpyGHhKCnIQeE4KcgR4RQpyBHhFClIr3CaFKRXOE0K0iVcIQXpES6RgvQIl8g+qYWrZJ/UwlWyR2rhOtkjtXCd7JBKGEK2ya4wjGyTXWEY2SK7wkCyRXaFgWSLbAtjyQbZEMaTDbIhjCdt0hLmkDZpCXNIg7SEaeSdtIR55J20hHnklTSFieSVNIWJZE2awlSyJg1hMlmThjCZPJGWMJ08kZYwnTxIS5hP/pN34R7yn7wL95Bf8iLcR37Ji3Af+SUr4U4CApEn4V4CApEn4V4CshbuJiBr4W6CrIT7CfInfIYgf8JnKD/CByk/wgcp38In/QMuxGpZ3OybsgAAAABJRU5ErkJggg=="
+    },
+    {
+      "label": "Other_CL_sky",
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          370.0,
+          88.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAXIAAABYCAAAAADNDyMxAAABn0lEQVR4Ae3BC4obMRRFwXP2v+ibgTBgEzv0T2qp9aqU0pdS+lJKN+GHUroJP5TSWnillNbCK6U0FP6hlAbCV0ppIHyllMuEDZRymbCBUi4SNlHKWWEPpZwV9lDKCWE3pZwQdlPKMeEYpewTzlHKPuEcpWwWLqCUzcIFlPJ/4VpK+Sy0oZTPQhtKeRfaUsq70JZS/gp9KIXQkVIIHSkLCzdQFhZuoCwq3ERZTriVspxwK2UdYQTKOsIIlDWEUSiPFoajPFoYjvJIYVjKI4VhKY8Shqc8RJiE8hBhEsr0wlSU6YWpKBMLE1ImFiakTClMS5lLmJ0ylzA7ZRLhIZRJhIdQBhceRhlTeCplTOGplMGEh1MGEx5OGUZYgjKAsBBlAGEhyq3CcpRbheUodwlrUu4Q1qXcIaxL6ScUUPoJBZQeQvmlHBdeybtQPlGOC6/kXSifKMeEcoxyTCjHKPuEco6yUSiXUDYK5RLKBqFcRtkglMso/xXKxZSvQmlA+SqUBpRPQmlF+SSUVpR3obSl/AqlB+VXKD0ohNKRQigd/QHIVFhbnxsZfwAAAABJRU5ErkJggg=="
+    }
+  ],
+  "imagePath": "22020122_aug_crop_0b8d_aug_noise_34dd_aug_cutout_6435.png",
+  "imageData": null,
+  "imageHeight": 598,
+  "imageWidth": 800
+}

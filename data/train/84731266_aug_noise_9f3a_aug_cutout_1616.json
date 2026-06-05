@@ -1,0 +1,46 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Superstructure_CL_road",
+      "points": [
+        [
+          0.0,
+          228.0
+        ],
+        [
+          799.0,
+          267.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAyAAAAAoCAAAAAAjoMFEAAABc0lEQVR4nO3d0XKCMBAFUOL0/385HQQ1YLstjAgr5zxUFGSQ5BKEdlu6Xul/1OHh5Wr5x4x6myiPya4r9emlF1vwyZul6vjGpyf9hvZP2g3eZq+u3+0HVBcs2/eJsdW2Muy5Yf1ltwbcoY+00Xv7xnAYk2hFPaHP4sl6SqbjKhu6jw9/LHW2gMACtbssWRzORkAgICAQEBAICAgEBAQCAgIBAYGAgEBAQCDgV00gYASBgIBA4CuaCedWu0vd7g+zID2nWBAQEAgICATcB4FPuYo1qbYDb5BlBFGxh10k/A7iujTvk2QEmYcix1aT3bWaZkk/Zhz/E5BTzfUl/TdDBd9HjATmeJdVatJ2STCC1BfVpB7XM68tzSGVWSPdmq189inWpDTuWLr9Pvk42Eyqpa/UVobfsj48e2pbtu1Kk5FrdR8fB8DVCWkTfT8+64qk0abo56NyaQewyf+8aGc8rVUKAAAAAACO4ei30fOb3SiiS+UbXT9FPCxTdBcAAAAASUVORK5CYII="
+    },
+    {
+      "label": "Obstacle_CL_water",
+      "points": [
+        [
+          355.0,
+          141.0
+        ],
+        [
+          695.0,
+          524.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "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"
+    }
+  ],
+  "imagePath": "84731266_aug_noise_9f3a_aug_cutout_1616.png",
+  "imageData": null,
+  "imageHeight": 533,
+  "imageWidth": 800
+}

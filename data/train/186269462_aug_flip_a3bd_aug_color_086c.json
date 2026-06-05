@@ -1,0 +1,118 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Superstructure_CL_road",
+      "points": [
+        [
+          145.0,
+          185.0
+        ],
+        [
+          584.0,
+          215.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAbcAAAAeCAAAAACKmA+lAAABO0lEQVRoBe3BAXKaUAAFwH33P/QrRFHpoGFqJ4Hk78YuKbEo4kPN4qKGrxE7xNsam4rYUqGEIhZ1lfq14rU4j8ZaLUJ9SP0E8UL8AI0dirhoXNVRxQ5xOhWbGneNm4qLmgT1ROqbxXOhJvF7VSxqEhsaW+oqZpWaRG2Kuoir2hbPxKwxHECtxRMxHEf9JbbFcCCVehRrUZMYjqYexFqoGA6o7mItNIb/pLFXCSWeqZtYieG7VJR4oa7iUQwHVx/iLobjq1mQmsVwAjULoojhFGoSRInhHGoSpCYxnEMRQhHDORQRlBhOoogYTqUmieFcahI3MZxCERuCiuGYSvyroIhF46bipvG5xrBX4ytFCXWTuovGsEMcVNQkSqhFqPjdGj9E1Gsxq5U4pxjeFjWJCopQQYlFxRsakwp/AA78YSLAGpADAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "Obstacle_CL_water",
+      "points": [
+        [
+          107.0,
+          238.0
+        ],
+        [
+          489.0,
+          446.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAX4AAADQCAAAAAAl0FUKAAAEpElEQVR4Ae3BAULkNhQFwe77H/qFZDcJDAPLWNKXLatK7kx+JIwidyQvCyPIDckBYQC5ITkgDCD3I0eEAeR25JAwgNyNHBMGkJuRw0J3civSIvQmtyItQm9yJ9ImdCb3Ia1CZ3If0ip0JrchrUJvchvSKHQndyGNQn9yE9Iq9Cc3IY3CAHIP0iiMILcgjcIQcgfSKIwhNyCtwhhyA9IqjCHrk2ZhDFmeNAuDyPKkWRhEViftwiCyOmkWRpHVSbMwiixO2oVRZHHSLAwja5N2YRhZmrQL48jSpF0YR1YmHYRxZGXSLIwkC5N2YSRZmLQLI8m6pF0YSpYlHYShZFXSQxhKFiU9hLFkTdJFGEvWJD2EwWRN0kEYTZYkPYTRZEnSQRhOViQdhPFkRdIuFJAVSbNQQVYkrUIJWZC0CjVkQdImVJEFSZNQRhYkTUIZWZC0CHVkQdIi1JH1SItQSNYjLUIhWY80CJVkPdIgVJL1yGGhlixHDgvFZDlyWCgmq5EGoZYsRlqEWrIYaRFqyVqkSagla5EmoZYsRdqEWrISaRVKyUKkWSglC5FWoZasQ5qFWrIM6SCUkmVIB6GUrEJ6CKVkEdJFKCWLkC5CKVmD9BFKyRqki1BLliB9hFqyAukk1JIFSC+hlixA+gjV5Pqkk1BNLk96CdXk8qSTUE6uTnoJ5eTipJtQTi5Ougnl5Nqkn1BOLk36CfXk0qSbMIFcmXQTZpArk17CFHJl0kuYQi5MeglzyIVJL2EOuS7pJswhlyX9hDnkqqSfMIlclHQUJpFLkq7CJHJF0leYRK5HeguTyOVId2ESuRrpLswiFyMDhEnkUmSIMIlciYwRJpELkUHCJHIdMkqYRC5DxglzyFXIQGEOuQgZKcwhlyBjhTnkCmSwMIecnwwX5pDTkwJhCjk5KRGmkFOTImEKOSupFKaQc5JaYQo5I6kWppDzkXphCjkZmSPMIKcis4QZ5FRkljCDnIVMFWaQM5D5wgQynZxCmEAmkhMJE0g5OadQT4rJaYVyUktOK9STQnJFYRwpI5cXOpMqsoTQk1SRxYR2UkFWFZpIAVlYaCDjydLCcTKarC4cJiPJPYSDZCC5i3CMDCK3Eg6R/uSGwhHSm9xTOEB6k3sKB0hfclvhddKN3Fx4mfQidxdeJh3I9kt4jbSR7YnwM9JEtufCT0gL2b4QfkKOku1b4c/kINn+KPyBHCPbD4TvySGy/Uz4jrxOtleEL8mrZHtV+IK8SLaXhS/Iz8l2UHhOfkS2NuEZ+QnZWoUn5M9k6yF8It+TrZ/wQL4lW0/hI/mWbD2Fj+RLsnUXPpAvyDZCeE+ek22I8J48I9so4R35RLaRwv/kgWxjhf/JB7INF/4j78lWIPxL3pGtRPhN3pGtRvhF3pOtRPhFPpKtQviHPJCtQvibPJKtQPibPJKtQngjj2QrEUAeyVYjII9kqxGQT2SrEeQT2WoE+US2GkEeyVYkyAPZqgR5IFuZyHuyVYq8kW0OkW0aZZtH2eZRtnmUbR5lm0dkm0Zkm0apF3kTubUgghQJb4Twm9ydgFQIT8lvQU4lgDwR+U/kRUEg8iZ/Ad8r0dxM6a3pAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "Obstacle_CL_road",
+      "points": [
+        [
+          347.0,
+          130.0
+        ],
+        [
+          590.0,
+          173.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAPMAAAArCAAAAACI8OGhAAABGklEQVRoBeXBAWKCQBAEwe7/P3piNBpQNICw3MUq+RByI59AhuRIcifsQUZkX4YrWS+8QcZkJ7KDsJQ8iGxIioRZZEKQteRQ4W8yIcga0obwjDwRkIWkKWGaTAsgC0iLwiOZFk5kDmlcOJOXwpm8Jv9HuJAXpEdBpoQf8oT0J8wiU6RDYSZ5JB0Ks8kd6VKYTwakU2EJuZJuhUXkQvoUlpNv0qGwkpxIf8JqAtKX8B5BmhcuDBsQpG1hYyLNCbsSaUrYndKSUEBpRyihNCPUUJoRagjShlBEkCaEKoI0IVSRMzlaKCNXcqRQR37JcUIdGZCjhEIyJFXCjUAoJGNSIgxIqCRjUiEcSaYIAWQX4ViyLTkJcieAhBZ8AcVOODDetBlMAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "Superstructure_CL_cons",
+      "points": [
+        [
+          117.0,
+          210.0
+        ],
+        [
+          599.0,
+          241.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAeIAAAAfCAAAAAAe+ZEMAAAA6klEQVRoBe3BAU4iURQEwOr7H7plcDSuAaNGGPj7qkKc1VhSxNeKuKTErsSuPokKNQ6QeDQlahfUm6jxMxHLqkHE/66WFjG+rTaxK7GpxxVi3EmdxKbuJcR4TI1XdZb6hRBjVUUQY2FBjIUFMRYWYqwsxFhZEOMQFTfXIMYhKm4vTmKsK05irCs2MVbVOIuxqMarGIuKNzGWFB/EWE/8K8Zi4ksxnl3cU0rs6iTGbTUeUlxS18W4qPG4Ylei/kCc1XfE0yviGaQOFGe1iSdSJzF+Kj6rK1LEQWoT4zdC3VqUUO9SBI0rGtS7F58hMS0wRtBjAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "BS_CL_intermediate",
+      "points": [
+        [
+          424.0,
+          239.0
+        ],
+        [
+          438.0,
+          276.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAA4AAAAlCAAAAABXSIf4AAAAY0lEQVQoFU3BgW3DABADMd7+Q6tFkLxNRn6mvJW38lbekseSx5LHkseSx5LHkseSM8mZ5ExyJjmTnEnOJGeSM8mZ5ExyJjmTnEnOJGeSM8mZ5EzyM5KfkXwNydcQ+Zh/IczHH6ufISqK6qznAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "BS_CL_intermediate",
+      "points": [
+        [
+          266.0,
+          235.0
+        ],
+        [
+          291.0,
+          277.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAABkAAAAqCAAAAABjbK+8AAAAiklEQVQ4EW3BAXLCQADDQOn/jzYtE2JfYFdADuFN5Ev4o/wSEPkliPwSxIA8BbnIIUjJiAypyJCKDKnIkIoMqciQigypyJCKDKnIkltkyS2ypGRJyZKSJSVLSpaULClZUrKkZEnJkpIlJQe5yUFucpCbHOQmJ/mQk3zIST7kQS7yIBd5krfIF/mXFz1+FkDSCJAZAAAAAElFTkSuQmCC"
+    }
+  ],
+  "imagePath": "186269462_aug_flip_a3bd_aug_color_086c.png",
+  "imageData": null,
+  "imageHeight": 448,
+  "imageWidth": 800
+}

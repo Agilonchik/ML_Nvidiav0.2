@@ -1,0 +1,54 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Superstructure_CL_road",
+      "points": [
+        [
+          690.1298473245208,
+          298.0558469170801
+        ],
+        [
+          687.6324081752109,
+          504.88788093550676
+        ],
+        [
+          78.88161553094976,
+          506.70219702338767
+        ],
+        [
+          79.50597531827725,
+          290.7985825655564
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "polygon",
+      "flags": {},
+      "mask": null
+    },
+    {
+      "label": "Obstacle_CL_water",
+      "points": [
+        [
+          256.0,
+          0.0
+        ],
+        [
+          393.0,
+          293.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "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"
+    }
+  ],
+  "imagePath": "191956898_aug_flip_01d2_aug_crop_23e8_aug_noise_64d0.png",
+  "imageData": null,
+  "imageHeight": 532,
+  "imageWidth": 800
+}

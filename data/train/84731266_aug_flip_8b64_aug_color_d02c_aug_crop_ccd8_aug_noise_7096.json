@@ -1,0 +1,46 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Superstructure_CL_road",
+      "points": [
+        [
+          0.0,
+          180.0
+        ],
+        [
+          512.0,
+          255.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAgAAAABLCAAAAAAjE2CgAAAB60lEQVR4Ae3BCY7iUBAFwcz7H/qNbRYvjbpBgwT+VRHK78KeTMJMVgFkK4CsAvKiIIvwKUJYGHaEsJKdyB8iHxCQRZgpvwt7MgkzWQWQrQCyCsiLgizCpwhhYdgRwkp2In+IfEBAFmGmnEzYkZ+CtGcE5WTCjvwUpD0jKKcVaf9LOa1I+19Kq0xplSmtMqVVprTKlFaZ0ipTWmVKq0xplSmtMqVVprTKlFaZ0ipTWmVKq0xplSmtMqVVprTKlFaZ0ipTWmVKq0xplSmtMqVVprTKlFaZ0ipTWmVKq0xplSmtMqXVFZRWV1BaXUFpdQWl1RWUVldQWl1BaXUFpdUVlFaZ0ipT2kEAKUJpBwGkCKUdBJAilLYRdmR0StsIOzI6pd2FAxmd0u7CgYxOaYvwiAxOaYvwiAxOaYvwiAxOqSg8T8YVlIrC82RcQRlc2JDwKhlXUAYXNiS8SsYV5IRkEm7kICCL8A4yqiAnJJNwIwcBWYR3kFEFGYOEmRBmEt5LVgG5CldyEWZyEPk6QcYgYSaEmYT3klVArsKVXISZHES+TpAxSJgJYSbhvWQVkKtwJRdhJgeRrxOkfRkh3MhdmMgbBZD2ZYRwI3dhIm8UQNoZCYRHZBI2ZCMgk3Ah7YwEwiMyCRuyEZBJuPgHcAZvfb2JkEQAAAAASUVORK5CYII="
+    },
+    {
+      "label": "Obstacle_CL_water",
+      "points": [
+        [
+          0.0,
+          283.0
+        ],
+        [
+          30.0,
+          469.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAB4AAAC6CAAAAACc1qKGAAAB+0lEQVRYCX3BgWHCMBDAQGn/oVVSAiRg/51CgLzFh0KAvMWHshAnZSFOyl4oe6HshbIXyl4oe6HshbIXyl4oe6HshbIXyl4oe6HshbIXyl4og5RByiBlkDJIGaQMUgYpg5RByiBlkDJIGaQMUgYpg5RByiBlkDJIGaQMUgYpg5RByiBlkDJImSgTZaJMlIkySBmkDFIGKYOUQcogZZAySBmkDFIGKYOUQcogZZAySBmkDFIGKYOUQcogZZAySBmkDFIGKRNlokyUiTJIGaQMUgYpg5RByiBlkDJImSgTZaJMlIkyUSbKRJkoE2WiTJRByiBlL5S9UA7JTTwph+QmnpRDchNPCvEiT3FSiBd5ipPyECAfcVIeAuQjTspDyJc4KA8hX+KgPIR8iYPykHyLg/KQfIuDshYHZS0Oyko8KSvxpCzESVmIk7IQJ2UhTspCnJSFOCkLcVJ+xYvyK16UX/GifIsP5Vt8KDdxo9zEjXITN8pN3Cg3caNcxZ1yFXfKVdwpV3GnXMWdchV3ylXcKVdxp1zFnXIVd8pV3CkX8UW5iC/KRXxRLuKLchFflLf4obzFD+Utfihv8UN5iV/KS/xSXuKXcooF5RQLyikWlFMsKP9iSfkXS8q/WFL+xZLyL5aUQ6wph1hTHmJDeYgNhdhSiC2F2FJiT4m9P+E/s9AZbTmtAAAAAElFTkSuQmCC"
+    }
+  ],
+  "imagePath": "84731266_aug_flip_8b64_aug_color_d02c_aug_crop_ccd8_aug_noise_7096.png",
+  "imageData": null,
+  "imageHeight": 533,
+  "imageWidth": 800
+}

@@ -1,0 +1,207 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3840" height="2379" viewBox="0 0 3840 2379">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<text x="1920.0" y="78" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="62" font-weight="800" fill="#0F172A">Bridge CV Taxonomy</text>
+<text x="1920.0" y="125" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="28" fill="#475569">Automatically generated from YAML | root classes: 4 | total classes: 23</text>
+<path d="M1325.0,390.0 V434.5 H1325.0 V479.0" fill="none" stroke="#15803D" stroke-width="4"/>
+<circle cx="1325.0" cy="479.0" r="7" fill="#15803D"/>
+<path d="M1325.0,390.0 V683.5 H1325.0 V977.0" fill="none" stroke="#15803D" stroke-width="4"/>
+<circle cx="1325.0" cy="977.0" r="7" fill="#15803D"/>
+<path d="M1325.0,390.0 V766.5 H1325.0 V1143.0" fill="none" stroke="#15803D" stroke-width="4"/>
+<circle cx="1325.0" cy="1143.0" r="7" fill="#15803D"/>
+<path d="M1325.0,390.0 V849.5 H1325.0 V1309.0" fill="none" stroke="#15803D" stroke-width="4"/>
+<circle cx="1325.0" cy="1309.0" r="7" fill="#15803D"/>
+<path d="M2260.0,390.0 V434.5 H2260.0 V479.0" fill="none" stroke="#7E22CE" stroke-width="4"/>
+<circle cx="2260.0" cy="479.0" r="7" fill="#7E22CE"/>
+<path d="M2260.0,390.0 V517.5 H2260.0 V645.0" fill="none" stroke="#7E22CE" stroke-width="4"/>
+<circle cx="2260.0" cy="645.0" r="7" fill="#7E22CE"/>
+<path d="M3195.0,390.0 V434.5 H3195.0 V479.0" fill="none" stroke="#D97706" stroke-width="4"/>
+<circle cx="3195.0" cy="479.0" r="7" fill="#D97706"/>
+<path d="M3195.0,390.0 V517.5 H3195.0 V645.0" fill="none" stroke="#D97706" stroke-width="4"/>
+<circle cx="3195.0" cy="645.0" r="7" fill="#D97706"/>
+<path d="M3195.0,390.0 V600.5 H3195.0 V811.0" fill="none" stroke="#D97706" stroke-width="4"/>
+<circle cx="3195.0" cy="811.0" r="7" fill="#D97706"/>
+<path d="M3195.0,390.0 V683.5 H3195.0 V977.0" fill="none" stroke="#D97706" stroke-width="4"/>
+<circle cx="3195.0" cy="977.0" r="7" fill="#D97706"/>
+<path d="M3195.0,390.0 V766.5 H3195.0 V1143.0" fill="none" stroke="#D97706" stroke-width="4"/>
+<circle cx="3195.0" cy="1143.0" r="7" fill="#D97706"/>
+<path d="M3195.0,390.0 V849.5 H3195.0 V1309.0" fill="none" stroke="#D97706" stroke-width="4"/>
+<circle cx="3195.0" cy="1309.0" r="7" fill="#D97706"/>
+<path d="M1325.0,390.0 V932.5 H1325.0 V1475.0" fill="none" stroke="#15803D" stroke-width="4"/>
+<circle cx="1325.0" cy="1475.0" r="7" fill="#15803D"/>
+<path d="M1325.0,390.0 V1015.5 H1325.0 V1641.0" fill="none" stroke="#15803D" stroke-width="4"/>
+<circle cx="1325.0" cy="1641.0" r="7" fill="#15803D"/>
+<path d="M1325.0,390.0 V1098.5 H1325.0 V1807.0" fill="none" stroke="#15803D" stroke-width="4"/>
+<circle cx="1325.0" cy="1807.0" r="7" fill="#15803D"/>
+<path d="M1325.0,390.0 V1181.5 H1325.0 V1973.0" fill="none" stroke="#15803D" stroke-width="4"/>
+<circle cx="1325.0" cy="1973.0" r="7" fill="#15803D"/>
+<path d="M2260.0,390.0 V600.5 H2260.0 V811.0" fill="none" stroke="#7E22CE" stroke-width="4"/>
+<circle cx="2260.0" cy="811.0" r="7" fill="#7E22CE"/>
+<path d="M1325.0,611.0 V628.0 H1392.5 V645.0" fill="none" stroke="#15803D" stroke-width="4"/>
+<circle cx="1392.5" cy="645.0" r="7" fill="#15803D"/>
+<path d="M1325.0,611.0 V711.0 H1392.5 V811.0" fill="none" stroke="#15803D" stroke-width="4"/>
+<circle cx="1392.5" cy="811.0" r="7" fill="#15803D"/>
+<rect x="110" y="240" width="560" height="150" rx="22" ry="22" fill="#F3F4F6" stroke="#6B7280" stroke-width="4"/>
+<circle cx="162" cy="292" r="34" fill="#FFFFFF" stroke="#6B7280" stroke-width="4"/>
+<text x="162" y="303" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#4B5563">0</text>
+<text x="215" y="278" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 0</text>
+<text x="215" y="312" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Background</tspan></text>
+<text x="215" y="346" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">null</tspan></text>
+<text x="215" y="378" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#4B5563">misc class</tspan></text>
+<rect x="1045" y="240" width="560" height="150" rx="22" ry="22" fill="#F0FDF4" stroke="#15803D" stroke-width="4"/>
+<circle cx="1097" cy="292" r="34" fill="#FFFFFF" stroke="#15803D" stroke-width="4"/>
+<text x="1097" y="303" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#15803D">1</text>
+<text x="1150" y="278" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 1</text>
+<text x="1150" y="312" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Superstructure</tspan></text>
+<text x="1150" y="346" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">null</tspan></text>
+<text x="1150" y="378" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#15803D">Main class 1</tspan></text>
+<rect x="1980" y="240" width="560" height="150" rx="22" ry="22" fill="#FAF5FF" stroke="#7E22CE" stroke-width="4"/>
+<circle cx="2032" cy="292" r="34" fill="#FFFFFF" stroke="#7E22CE" stroke-width="4"/>
+<text x="2032" y="303" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#7E22CE">2</text>
+<text x="2085" y="278" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 2</text>
+<text x="2085" y="312" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Support</tspan></text>
+<text x="2085" y="346" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">null</tspan></text>
+<text x="2085" y="378" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#7E22CE">Main class 2</tspan></text>
+<rect x="2915" y="240" width="560" height="150" rx="22" ry="22" fill="#FFFBEB" stroke="#D97706" stroke-width="4"/>
+<circle cx="2967" cy="292" r="34" fill="#FFFFFF" stroke="#D97706" stroke-width="4"/>
+<text x="2967" y="303" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#D97706">3</text>
+<text x="3020" y="278" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 3</text>
+<text x="3020" y="312" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Crossed obstacle zone</tspan></text>
+<text x="3020" y="346" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">null</tspan></text>
+<text x="3020" y="378" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#D97706">Main class 3</tspan></text>
+<rect x="1045" y="479" width="560" height="132" rx="22" ry="22" fill="#F0FDF4" stroke="#15803D" stroke-width="4"/>
+<circle cx="1097" cy="531" r="34" fill="#FFFFFF" stroke="#15803D" stroke-width="4"/>
+<text x="1097" y="542" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#15803D">4</text>
+<text x="1150" y="517" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 4</text>
+<text x="1150" y="551" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Roadway</tspan></text>
+<text x="1150" y="585" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Superstructure</tspan></text>
+<text x="1150" y="617" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#15803D">Main class 4</tspan></text>
+<rect x="1045" y="977" width="560" height="132" rx="22" ry="22" fill="#F0FDF4" stroke="#15803D" stroke-width="4"/>
+<circle cx="1097" cy="1029" r="34" fill="#FFFFFF" stroke="#15803D" stroke-width="4"/>
+<text x="1097" y="1040" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#15803D">5</text>
+<text x="1150" y="1015" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 5</text>
+<text x="1150" y="1049" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Bridge deck</tspan></text>
+<text x="1150" y="1083" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Superstructure</tspan></text>
+<text x="1150" y="1115" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#15803D">Construction of element</tspan></text>
+<rect x="1045" y="1143" width="560" height="132" rx="22" ry="22" fill="#F0FDF4" stroke="#15803D" stroke-width="4"/>
+<circle cx="1097" cy="1195" r="34" fill="#FFFFFF" stroke="#15803D" stroke-width="4"/>
+<text x="1097" y="1206" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#15803D">6</text>
+<text x="1150" y="1181" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 6</text>
+<text x="1150" y="1215" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Safety barrier</tspan></text>
+<text x="1150" y="1249" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Superstructure</tspan></text>
+<text x="1150" y="1281" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#15803D">Construction of element</tspan></text>
+<rect x="1045" y="1309" width="560" height="132" rx="22" ry="22" fill="#F0FDF4" stroke="#15803D" stroke-width="4"/>
+<circle cx="1097" cy="1361" r="34" fill="#FFFFFF" stroke="#15803D" stroke-width="4"/>
+<text x="1097" y="1372" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#15803D">7</text>
+<text x="1150" y="1347" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 7</text>
+<text x="1150" y="1381" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Structure body</tspan></text>
+<text x="1150" y="1415" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Superstructure</tspan></text>
+<text x="1150" y="1447" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#15803D">Construction of element</tspan></text>
+<rect x="1980" y="479" width="560" height="132" rx="22" ry="22" fill="#FAF5FF" stroke="#7E22CE" stroke-width="4"/>
+<circle cx="2032" cy="531" r="34" fill="#FFFFFF" stroke="#7E22CE" stroke-width="4"/>
+<text x="2032" y="542" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#7E22CE">8</text>
+<text x="2085" y="517" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 8</text>
+<text x="2085" y="551" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">End support</tspan></text>
+<text x="2085" y="585" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Support</tspan></text>
+<text x="2085" y="617" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#7E22CE">Construction of element</tspan></text>
+<rect x="1980" y="645" width="560" height="132" rx="22" ry="22" fill="#FAF5FF" stroke="#7E22CE" stroke-width="4"/>
+<circle cx="2032" cy="697" r="34" fill="#FFFFFF" stroke="#7E22CE" stroke-width="4"/>
+<text x="2032" y="708" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#7E22CE">9</text>
+<text x="2085" y="683" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 9</text>
+<text x="2085" y="717" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Intermediate support</tspan></text>
+<text x="2085" y="751" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Support</tspan></text>
+<text x="2085" y="783" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#7E22CE">Construction of element</tspan></text>
+<rect x="2915" y="479" width="560" height="132" rx="22" ry="22" fill="#FFFBEB" stroke="#D97706" stroke-width="4"/>
+<circle cx="2967" cy="531" r="34" fill="#FFFFFF" stroke="#D97706" stroke-width="4"/>
+<text x="2967" y="542" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#D97706">10</text>
+<text x="3020" y="517" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 10</text>
+<text x="3020" y="551" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">water under bridge</tspan></text>
+<text x="3020" y="585" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Crossed obstacle zone</tspan></text>
+<text x="3020" y="617" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#D97706">Contextual zone element</tspan></text>
+<rect x="2915" y="645" width="560" height="132" rx="22" ry="22" fill="#FFFBEB" stroke="#D97706" stroke-width="4"/>
+<circle cx="2967" cy="697" r="34" fill="#FFFFFF" stroke="#D97706" stroke-width="4"/>
+<text x="2967" y="708" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#D97706">11</text>
+<text x="3020" y="683" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 11</text>
+<text x="3020" y="717" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">river/channel/stream bed</tspan></text>
+<text x="3020" y="751" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Crossed obstacle zone</tspan></text>
+<text x="3020" y="783" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#D97706">Contextual zone element</tspan></text>
+<rect x="2915" y="811" width="560" height="132" rx="22" ry="22" fill="#FFFBEB" stroke="#D97706" stroke-width="4"/>
+<circle cx="2967" cy="863" r="34" fill="#FFFFFF" stroke="#D97706" stroke-width="4"/>
+<text x="2967" y="874" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#D97706">12</text>
+<text x="3020" y="849" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 12</text>
+<text x="3020" y="883" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">ground valley under bridge</tspan></text>
+<text x="3020" y="917" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Crossed obstacle zone</tspan></text>
+<text x="3020" y="949" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#D97706">Contextual zone element</tspan></text>
+<rect x="2915" y="977" width="560" height="132" rx="22" ry="22" fill="#FFFBEB" stroke="#D97706" stroke-width="4"/>
+<circle cx="2967" cy="1029" r="34" fill="#FFFFFF" stroke="#D97706" stroke-width="4"/>
+<text x="2967" y="1040" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#D97706">13</text>
+<text x="3020" y="1015" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 13</text>
+<text x="3020" y="1049" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">slope or embankment cone</tspan></text>
+<text x="3020" y="1083" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Crossed obstacle zone</tspan></text>
+<text x="3020" y="1115" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#D97706">Contextual zone element</tspan></text>
+<rect x="2915" y="1143" width="560" height="132" rx="22" ry="22" fill="#FFFBEB" stroke="#D97706" stroke-width="4"/>
+<circle cx="2967" cy="1195" r="34" fill="#FFFFFF" stroke="#D97706" stroke-width="4"/>
+<text x="2967" y="1206" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#D97706">14</text>
+<text x="3020" y="1181" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 14</text>
+<text x="3020" y="1215" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">road under bridge</tspan></text>
+<text x="3020" y="1249" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Crossed obstacle zone</tspan></text>
+<text x="3020" y="1281" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#D97706">Contextual zone element</tspan></text>
+<rect x="2915" y="1309" width="560" height="132" rx="22" ry="22" fill="#FFFBEB" stroke="#D97706" stroke-width="4"/>
+<circle cx="2967" cy="1361" r="34" fill="#FFFFFF" stroke="#D97706" stroke-width="4"/>
+<text x="2967" y="1372" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#D97706">15</text>
+<text x="3020" y="1347" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 15</text>
+<text x="3020" y="1381" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">railway under bridge</tspan></text>
+<text x="3020" y="1415" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Crossed obstacle zone</tspan></text>
+<text x="3020" y="1447" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#D97706">Contextual zone element</tspan></text>
+<rect x="1045" y="1475" width="560" height="132" rx="22" ry="22" fill="#F0FDF4" stroke="#15803D" stroke-width="4"/>
+<circle cx="1097" cy="1527" r="34" fill="#FFFFFF" stroke="#15803D" stroke-width="4"/>
+<text x="1097" y="1538" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#15803D">16</text>
+<text x="1150" y="1513" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 16</text>
+<text x="1150" y="1547" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">sidewalk</tspan></text>
+<text x="1150" y="1581" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Superstructure</tspan></text>
+<text x="1150" y="1613" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#15803D">Construction element</tspan></text>
+<rect x="1045" y="1641" width="560" height="132" rx="22" ry="22" fill="#F0FDF4" stroke="#15803D" stroke-width="4"/>
+<circle cx="1097" cy="1693" r="34" fill="#FFFFFF" stroke="#15803D" stroke-width="4"/>
+<text x="1097" y="1704" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#15803D">17</text>
+<text x="1150" y="1679" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 17</text>
+<text x="1150" y="1713" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Road barrier</tspan></text>
+<text x="1150" y="1747" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Superstructure</tspan></text>
+<text x="1150" y="1779" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#15803D">Construction element</tspan></text>
+<rect x="1045" y="1807" width="560" height="132" rx="22" ry="22" fill="#F0FDF4" stroke="#15803D" stroke-width="4"/>
+<circle cx="1097" cy="1859" r="34" fill="#FFFFFF" stroke="#15803D" stroke-width="4"/>
+<text x="1097" y="1870" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#15803D">18</text>
+<text x="1150" y="1845" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 18</text>
+<text x="1150" y="1879" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Expansion joint</tspan></text>
+<text x="1150" y="1913" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Superstructure</tspan></text>
+<text x="1150" y="1945" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#15803D">Construction element</tspan></text>
+<rect x="1045" y="1973" width="560" height="132" rx="22" ry="22" fill="#F0FDF4" stroke="#15803D" stroke-width="4"/>
+<circle cx="1097" cy="2025" r="34" fill="#FFFFFF" stroke="#15803D" stroke-width="4"/>
+<text x="1097" y="2036" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#15803D">19</text>
+<text x="1150" y="2011" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 19</text>
+<text x="1150" y="2045" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Deck lighting equipment</tspan></text>
+<text x="1150" y="2079" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Superstructure</tspan></text>
+<text x="1150" y="2111" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#15803D">Operational element</tspan></text>
+<rect x="1980" y="811" width="560" height="132" rx="22" ry="22" fill="#FAF5FF" stroke="#7E22CE" stroke-width="4"/>
+<circle cx="2032" cy="863" r="34" fill="#FFFFFF" stroke="#7E22CE" stroke-width="4"/>
+<text x="2032" y="874" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#7E22CE">20</text>
+<text x="2085" y="849" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 20</text>
+<text x="2085" y="883" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Large visible bearing part</tspan></text>
+<text x="2085" y="917" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Support</tspan></text>
+<text x="2085" y="949" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#7E22CE">Support interface element</tspan></text>
+<rect x="1130" y="645" width="525" height="132" rx="22" ry="22" fill="#F0FDF4" stroke="#15803D" stroke-width="4"/>
+<circle cx="1182" cy="697" r="34" fill="#FFFFFF" stroke="#15803D" stroke-width="4"/>
+<text x="1182" y="708" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#15803D">21</text>
+<text x="1235" y="683" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 21</text>
+<text x="1235" y="717" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Bridge approach</tspan></text>
+<text x="1235" y="751" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Roadway</tspan></text>
+<text x="1235" y="783" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#15803D">Roadway interface element</tspan></text>
+<rect x="1130" y="811" width="525" height="132" rx="22" ry="22" fill="#F0FDF4" stroke="#15803D" stroke-width="4"/>
+<circle cx="1182" cy="863" r="34" fill="#FFFFFF" stroke="#15803D" stroke-width="4"/>
+<text x="1182" y="874" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="800" fill="#15803D">22</text>
+<text x="1235" y="849" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">ID: 22</text>
+<text x="1235" y="883" font-family="Arial, Helvetica, sans-serif" font-size="23" font-weight="800" fill="#111827">Name: <tspan font-weight="500">Approach embankment</tspan></text>
+<text x="1235" y="917" font-family="Arial, Helvetica, sans-serif" font-size="21" font-weight="800" fill="#111827">Parent: <tspan font-weight="500">Roadway</tspan></text>
+<text x="1235" y="949" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" fill="#111827">Type: <tspan font-weight="600" fill="#15803D">Roadway interface element</tspan></text>
+<rect x="110" y="2229" width="3620" height="95" rx="20" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="3"/>
+<text x="140" y="2267" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="800" fill="#111827">Layout: unlimited root classes, dynamic canvas, recursive hierarchy.</text>
+<text x="140" y="2299" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#475569">Root classes are detected by parent: null. Missing parents are shown as orphan roots.</text>
+</svg>

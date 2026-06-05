@@ -1,0 +1,28 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Superstructure_CL_road",
+      "points": [
+        [
+          366.0,
+          256.0
+        ],
+        [
+          512.0,
+          512.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAJIAAAEACAAAAAB9yXCuAAADe0lEQVR4Ac3BC3bTWAJAwbr7X7SHHgInBOxYeh+pKtfJh4fPcp18ePgsu+Slh1+yS156+CV75HsP/5ct8o6H/2SLvOPhP1kv73r4IevlfQ+yXt73IMvliIcsl0MeWS6HPLJYjspiOSqL5agslqOyWI7KYjkqi+WoLJajsliOymI5KovlqCyWo7JOHuSorBMPOSrrxEOOyjo5JcvknCyTc7JMzskyOSfL5Jwsk3OySk7KKjkpa+S0LJHzskTOyxI5L0vkvCyR87JARmS6jMl0GZPpMibTZUymy5hMlzGZLmMyXcZkuozJdBmT6TIm02VMpsuYzJZBmS2DMlsGZbKMymQZlckyKlNlXKbKuEyVcZkpE2SizJCJMkPmyRSZJZNklkySOTJNJshMmSAzZYLMlAkyUybITBmXqTIuU2Vcpsq4TJVxmSrjMlXGZaoMy1wZlrkyLHNlWObKsMyVQZktgzJbBmW2DMpsGZPpMibTZUymy5hMlzGZLkMyX0ZkgYzIAjkvS+S8LJHzskTOyxI5L0vkvCyR07JGTssaOS1r5LSskdOyRs7KIjkny+ScLJNTsk5OyTo5JevklKyTM7JQzshCOSEr5YSslBOyUk7ISjkhK+WErJTDslaOymI5KovloKyWg7JaDspqOSir5ZCsl0OyXg7JejkiG+SIbJAjskEOyA45IDvkgOyQ92WLvC9b5F3ZJO/KJnlXNsm7sknelF3ypuySN2WXvCm75E3ZJW/KLnlTdsl7sk3ekJ3yhuyUN2SnvCE75Q3ZKW/ITvletsr3slW+l63yvWyV72WrfC9b5VvZK9/KXvlGdstr2S6vZbu8lu3yWrbLa9kuL2W/vJT98lL2ywu5Ql7IFfJCrpDncok8l0vkuVwiz+USeSrXyFO5Rp7KNfJUrpGnco08k4vkmVwkz+QieSYXyTO5SJ7JRfJPuU7+JRfKv+RC+Vsulb/lUvlbLpW/5VL5Wy6Vv+Ra+SoXy1e5WL7KxfJVLpavcrF8kavlD7le/pDr5Q+5Xj7LDeSz3EA+yw3ks9xAPssN5JPcQT7JHeST3EF+yz3kt9xDfss95LfcQ37JTeSX3ER+yU3kQ+4iH3IX+ZC7yIfcRT7kLvJTbiM/5TbyU24j/8mN5IfcSX7InYTcSsithNxKyK2E3ErIrYTcSnIzyc0kN5PcTHIz5W7+B2aMEfRuUFlJAAAAAElFTkSuQmCC"
+    }
+  ],
+  "imagePath": "157525562_aug_crop_c371_aug_cutout_3759.png",
+  "imageData": null,
+  "imageHeight": 600,
+  "imageWidth": 800
+}

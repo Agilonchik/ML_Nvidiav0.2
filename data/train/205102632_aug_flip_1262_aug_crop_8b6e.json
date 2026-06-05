@@ -1,0 +1,116 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "BS_CL_intermediate",
+      "points": [
+        [
+          43.0,
+          496.0
+        ],
+        [
+          146.0,
+          512.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAGcAAAAQCAAAAAAuDT5cAAAATklEQVQ4Eb3BQQrCUBBAsbz7H3rswkIFV+L8JJcYu3KJsat8M3kalxi/Sv5o8jY+JHvGLdkzbsm6Idk3kn0j2TeSE5ITkhOSE5ITQraNFziGDhYWM8kqAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "BS_CL_intermediate",
+      "points": [
+        [
+          152.0,
+          506.0
+        ],
+        [
+          180.0,
+          512.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAABwAAAAGCAAAAAD1K6G1AAAAKUlEQVQIHXXBsQ3AMAzAMOr/o10UyJDBIXPLMX6R1RDZjchulJcRefkAxaIFCPywGVMAAAAASUVORK5CYII="
+    },
+    {
+      "label": "Superstructure_CL_cons_under",
+      "points": [
+        [
+          509.6875270992918,
+          -80.73295576743853
+        ],
+        [
+          506.9125596184419,
+          256.0367051401534
+        ],
+        [
+          136.91689550513084,
+          482.69094558749725
+        ],
+        [
+          69.39268680445147,
+          487.2790881066743
+        ],
+        [
+          -580.8746928746929,
+          336.78801347766864
+        ],
+        [
+          -579.9497037144097,
+          -82.56821277510933
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "polygon",
+      "flags": {},
+      "mask": null
+    },
+    {
+      "label": "Other_CL_sky",
+      "points": [
+        [
+          0.0,
+          474.0
+        ],
+        [
+          37.0,
+          489.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAACUAAAAPCAAAAABGwlmPAAAARUlEQVQoFY3BgQmAQAwEwd3+iz4FFaLmyc8ohIlCmCi3sKYUoacUoae8hYbyFX6UXiiUXiiUpfBQZlE2KBuUWZRTuEgrB+3tDhIhpwSqAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "Superstructure_CL_cons",
+      "points": [
+        [
+          157.0,
+          257.0
+        ],
+        [
+          512.0,
+          507.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAWMAAAD6CAAAAABRt3kCAAAEd0lEQVR4Ae3BAWLiOAAEwe7/P1oHJBxkA44xkpHkqZJoSyTaEom2RKItkWhJQKIlAYmG5ESiITmRaEfOJNqRM4lG5JtEG3Il0YZcSbQhVxJtyJVEG3Il0YLcSLQgNxINyB2JmuQ3iZrkN4lq5CGJOuQZiRrkOYka5DmJt8kiiffJEon3yRKJ98kSiXfJMol3yN8kNpNVJDaTVSS2kbUkNpHVJF4kL5J4kbxI4gWygcRaso3EWrKNxFqyjcRKspHEOrKVxDqylcQasp3E3+QdEovkbRKL5G0SS+R9EgukAolnpA6JZ6QOiYekGolHpB6JR6Qeid+kJol/SV0SP0ltEj9JbRJX0obEF2lF4kKakbiQZiROpCE5PGlMDkt2IoclO5Gjkr3IUcle5KhkL3JUshc5JNmRHJHsSY5I9iSHIhTZmRyGfIgcg3yOHIN8jhyCfJAcgHyUHIB8lByAfJTMTz5LJiZdkHlJH2Re0geZlfRCpiQdkRlJT2RG0hOZjnRGZiO9kdlIb2Qy0h2ZinRIJiJdkolIl2QW0iuZg/RLZiA9kxlIz2QG0jMZnfROxib9k7FJ/2RoMgAZmAxBxiVjkHHJGGRQMgwZkgxEhiQDkQHJUGQ4MhgZjAxHBiPDkbHIeGQgMiQZh4xJxiFjklHIqGQEMjLpngxOuieDk87J8KRrMgHpmExBOiZTkF7JLKRLMhHpkkxE+iNzke7IZKQ3MhvpjcxGeiIzkm7IpKQPMi/pg8xLOiDTKPKLfJxMTj5MpicfJtOTz5L5yQfJIcjnyDHI58gxyGfIccgHyKHIB8ihyN7kaGRncjiyKzkg2ZUckOxIDkl2JIcku5GDkt3IQclO5LBkD3Jk0pwcnDQnBydtSUhTEkhTEkg7EmfShsSVNCHxP2lC4n/SgMQdqU/intQncU/qk7gn1Un8IJVJ/EPqkviX1CXxL6lI4gGpR+IRqUTiCalE4gmpROIJqUPiGalD4hmpQGKBvEtimbxD4m/yDom/yWYSq8hWEuvIRhIryUYSK8kmEqvJBhIvkJdJvEReJvESWU1iE1lLYhtZTWITWU1iE1lFYjNZJvEuWSbxLlkgUYE8JVGFPCFRiTwhUYk8JlGLPCJRj/xkASQqkp8sgERF8oBERfKbRE1yI9GC3Ei0IFcSbcg3iUYEKYCcFECiLkEKICcFkKhL5KYAEt8KUoHyQ5H4VkAqUH4oEt8KSAVKPFFAKlDOCnJSAIkvBaQCESiAULiQOCsgFYhAAYTChcRZAalAOSmcWbiQqEk5KdyTqEkECvckahKBwj2JmkSgcGbhQqImQQonQuFCoiZBCidC4UKiJkEKJ0LhQqImuRIKXyQqkhsLXyQqkhsLXyQqkhsLXyQqksckapHHJGqRxyRqkcfkpoCcFEDiVbKFxHpSn1wUFklhiVwU+VKQMUl9clFYJIUlclHkS0HGJG1IoRW5VwDpmYxHTgr3hMKFdEemI98KJ3JTOJMNCiCvKnIi05FvhRO5KZzJBgWQVxU5kXidUFjtP3UqQfQ5E+gEAAAAAElFTkSuQmCC"
+    }
+  ],
+  "imagePath": "205102632_aug_flip_1262_aug_crop_8b6e.png",
+  "imageData": null,
+  "imageHeight": 599,
+  "imageWidth": 800
+}

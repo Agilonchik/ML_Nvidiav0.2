@@ -1,0 +1,28 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "BS_CL_intermediate",
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          249.0,
+          439.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAPkAAAG3CAAAAABTAazkAAAFEElEQVR4AeXBAXLbBgIEwZn/P3qunFQlvshxJJEEAWy3MimUSaFMCmVSKJNCmRTKpFAmhTIplEmhbErZlLIpZVPKppRNKZtSNqVsStmUMimUSaFMCmVSKJNCmRTKppRNKZtSNqVsStmUsillU8qmlE0pm1I2pWxK2ZSyKWVSKJNC2ZSyKWVTyqaUTSmbUjalbEoZpWxK2ZSyKWVTyqaUTSmbUjalbErZlLIpZVPKppRNKZtSNqVsStmUsillU8qmlE0pm1I2pWxK2ZSyKWVTyqaUTSmbUkYpo5RRyihllDJK2ZSyKWVTyqaUTSmbUjalbErZlLIpZVPKppRNKZtSNqVsStmUsillU8qmlE0pm1I2pWxK2ZSyKWVTyqaUTSmbUjaljFJGKaOUUcooZZQyShmljFJGKaOUUcooZZQyStmUsillU8qmlFHKKGWUMkoZpYxSRimjlFHKKGWUMkoZpYxSRimjlFHKKGWUMkoZpYxSRimjlFHKKGWUMkoZpYxSRimjlFHKKGWUMkoZpYxSRimjlFHKKGWUMkoZpYxSRimjlFHKKGWUMkoZpYxSRimjlFHKKGWUMkoZpYxSRimjlFHKKGWUMkoZpYxSRimjlFHKKGWUMkoZpYxSRimjlFHKKGWUMkoZpYxSRimjlFHKKGWUMkoZpYxSRimjlFHKKGWUMkoZpYxSRimjlE0pm1I2pWxK2ZSyKWVTyqaUTSmbUjalbErZlLIpZVPKppRNKZtSNqVsStmUsillU8ooZZSyKWVTyqaUTSmTQpkUyqRQJoWyKFAWBcqiQFkUKIsCZVGgDApQ5sQPypz4QVkSf1GWxF+UGfEzZUb8TNkQ/6BsiH9QFsQHyoL4QLm/+AXl/uIXlLuLX1LuLn5Jubn4NeXm4teUO4t/pdxZ/CvlvuI3lPuK31DuKn5Luav4LeWO4j8pdxT/Sbmb+BTlXuKTlHuJT1JuJT5LuZX4LOU24iuU24ivUO4ivkS5i/gS5R7ii5R7iC9Sri++Qbm++Abl4uJ7lIuL71GuLL5NubL4NuWy4hHKZcUjlIuKxygXFY9RrikepFxTPEi5mngK5WriKZRLiWdRLiOeSbmMeCblEuLZlEuIZ1NOL15BOb14BeXc4kWUc4sXUc4oXk45o3g55XTiCMrpxBGU84gDKecRB1JOIo6lnEQcSzmDOJxyBnE45f3iDZT3izdQ3iRAfoh3UN4kQH6Id1DeJN5LeZN4L+U94s2U94g3U94i3k15h3g75R3i7ZQ3iPdT3iDeTzlenIByvDgB5XBxBsrh4gyUw8UZKIeLM1COFqegHC1OQTlanIJytDgF5WBxDsrB4hyUY8VJKMeKk1AOFOehHCjOQzlMnIlymDgT5SBxLspB4lyUY8TJKEeI01GOEKejvFyckfJycUbKi8U5KS8W56S8VpyU8lpxUsrrxIkprxMnprxCnJ7yCnF6yrPFJSjPFpegPFVchfJUcRXKM8VlKM8Ul6E8TVyJ8jRxJcqTxLUoTxLXojxFXI3yFHE1yjPE5ShPENejPEFcj/KwuCLlYXFFyqPikpRHxSUpj4mLUh4TF6U8JK5KeUhclfKIuCzlEXFZyiPispRHxGUpgXxPXJcSyPfEdckf5FviuuQP8i1xXfIn+Ya4MPmTfENcmPxNviAuTv4mXxAXJz+RT4urk5/Ip8XVyQcSAgHyUdyCfCAhECAfxS3If5D/Fzchn2bciXyacSf/A1zAQUf6gukXAAAAAElFTkSuQmCC"
+    }
+  ],
+  "imagePath": "67877636_aug_crop_a7cf_aug_cutout_1085.png",
+  "imageData": null,
+  "imageHeight": 598,
+  "imageWidth": 800
+}

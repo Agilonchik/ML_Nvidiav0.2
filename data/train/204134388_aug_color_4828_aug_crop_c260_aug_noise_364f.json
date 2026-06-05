@@ -1,0 +1,64 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Superstructure_CL_cons",
+      "points": [
+        [
+          0.0,
+          128.0
+        ],
+        [
+          512.0,
+          332.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAgAAAADMCAAAAAAgpkTAAAADeUlEQVR4Ae3BCW4bCQADwe7/P5prWQmgGOvEt2ZEVsk0EsKFTCMhXMjUkBcCMjXkhYDMg5J/Csg8KPmngMyBCOFCwksSruRrBGQORAgXEl6ScCVfIyBzb/IkgPywgMy9yZMA8sMCMl9MXhduyL0FZL6YvC7ckHsLyLyDfFp4JgcQkHkH+bTwTA4gIHMht8IN+XJBjiAgcyG3wg35ckGOICCPTeZ1AXlsMq8LyFnIk/AXMu8TkLOQJ+EvZN4nIIcm840Ccmgy3yggdyVzPwHkrmTuJ4B8M3kWmaMJIN9MnkXmaALIl5A5oYB8CZkTCsibyJxFuJA3CMibyJxFuJA3CAgSfpE5vXAl/xQQJPwic3rhSv4poMxjCVfyTwFlagWUqRVQplZAmVoBZU4kgPwp8kEBZU4kgPwp8kEBZU4kgPwpIB8SUOZEAsifAvIhAWVOIzyRFwLyIQFlTiM8kRcC8iEBZU4iPJMvE1DmJMIz+TIBZVoFUKZVAGVaBVCmVQBlagWUqRVQplZAmVoBZWoFlKkVUKZWQJlaAWVqBZSpFVCmVkCZWgFlagWUqRVQplZAmVoBZWoFlGmmTDNlminTTJlmyjRTppkyzZRppkwzZWoFlKkVUKZWQJlaAWVqBZSpFVCmmTLNlGmmTDNlminTTJlmyjRTppkyzZRppkwzZWoFlKkVUKZWQJlmyjRTppkyzZRppkwzZZop00yZZso0U6aZMs2UqRVQplZAmVoBZWoFlGmmTDNlminTTJlmyjRTppkyzZRppkwzZZop00yZZso0U6aZMs2UaaZMM2WaKdNMmWbKNFOmmTLNlGmmTDNlminTTJlmyjRTppkyzZRppkwzZZop00yZZso0U6aZMs2UaaZMM2WaKdNMmWbKNFOmmTLNlGmmTDNlminTTJlmyjRTppkyzZRppkwzZZop00yZWgFlagWUaRVAmVYBlOkULpTpFC6UeTjhidwK/0+ZhxOeyK3w/5Q5jXBluBLCpyhzGuHKcCWET1HmCALIjfAjlDmCAHIj/AhlflY4EmV+VjgSZT4tnJYynxZOS5l3CQ9FmXcJD0UpFn6TJ6GP8gjClVyEeSvlEYQruQjzVsqBhPlhyoGE+WHKfYQ5AuU+whyB8o3CHJzyjcIcnPI5AfklzNkonxOQX8KcjfKKgPwW5jEprwjIb2Ee03/WdKcrj1B4CQAAAABJRU5ErkJggg=="
+    },
+    {
+      "label": "Obstacle_CL_ground1",
+      "points": [
+        [
+          0.0,
+          412.0
+        ],
+        [
+          240.0,
+          512.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAPAAAABkCAAAAACdyeIbAAACMUlEQVR4AeXBAY7iMBQFwe77H/otIIRmtGGI/Z04CVVK+CZK+CbKQ/gSykP4EspL+ALKb+HalN/CtSkLwmUpC8JlKW+ES1LeCJek/ClcjPKncDHKZ+E6lM/CdSirhItQVgkXoawXzk9ZL5yf0iacm9ImnJvSLpyX0i6cl9IlnJTSJZyU0i2ckNItnJBSEc5GqQhnowwQTkMZIJyG3MgA4RTkRgYIpyBPMkI4OnmSEcLRyU8yQDgy+Z+UhaOS/0lZOCp5R4rCEck7UhSOSP4kReFg5E9SFA5GPpOacCDymdSEA5G1pCQcg6wlJeEYpIXUhOmkhdSE6aSZlISppJmUhKmkk1SEWaSTVIRZpEL6hSmkQvqFKaRKCsLepEoKwt5kEOkUdiWDSKewKxlK+oS9yFDSJ+xFNiHtwh5kE9Iu7EG2Iu3C5mQr0i5sTrYlzcKWZFvSLGxJtiftwkZke9IubET2Ic3CFmRP0iiMJnuSRmE02Zk0CwPJzqRZGEj2Jz3CELI/6RGGkBmkS6iTGaRLqJMZpF8okRmkXyiRGaQmdJMZpCZ0kymkLvSQKaQu9JApZIjQTKaQIUIzmULGCS1kChkntJApZLywhkwh44U1ZCpZEG6kKCySqWRBuJGisEgmkkXhQcYIP8lEsig8yBjhJ5lF3gs3MlB4klnkvXAjA4UnmUeWhQcZKjzIPLIsPMhQ4UHmknAnL+FJ7oKMEpC5JNzJS3iSuyCjBOQY5Cm8yAb+AXeCcmb6xwVmAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "Other_CL_sky",
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          99.0,
+          74.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAGMAAABKCAAAAACK87W3AAABR0lEQVRYCbXBCULEMAwEwe7/P3ogy+ZUuGKrSukWpVuUdko7pZ3STmmntFO6RekWpVdA6RVQegWUXgGlV0DpFVBaBVBaBVBaBVBaBVAahYXSKCyURmGhNAoL+SRNwkI+SZOwkC/SILzIF2kQXuRN5gsv8ibzhRd5k/nCi7zJfOFFNjJXeJONTBVWspGpwko2MlVYyUamCivZyFRhJRuZKqxkJ/OEnexknrCTncwTdrKTecJOjmSScCBHMkk4kBOZIxzIicwRDuRCxoUTuZBx4UQuZFw4kQsZF06kkDHhQgoZEy6kkDHhQgoZEy6kkCHhSgoZEq6kkhHhSioZEa6kkudCJZU8Fyqp5LlQSSXPhUoqeS5UUslj4YZU8li4IZU8E+5JJc+Ee1LJA+FbUskD4VtSyX+Fn0gl/xV+InfkV+HP5I78KvzZBze7RFHgEvrsAAAAAElFTkSuQmCC"
+    }
+  ],
+  "imagePath": "204134388_aug_color_4828_aug_crop_c260_aug_noise_364f.png",
+  "imageData": null,
+  "imageHeight": 532,
+  "imageWidth": 800
+}

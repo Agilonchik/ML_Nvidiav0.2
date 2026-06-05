@@ -1,0 +1,28 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Other_CL_sky",
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          512.0,
+          149.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAgAAAACVCAAAAAALJx3/AAAEiElEQVR4Ae3BCVYrORQFwcz9L/o202mwXaNk8wvpRShlZkqZmVJmppSZKWVmSpmZUmamlJkpZWZKmZlS5hWUMq+glHkFpcwrKGVmSpmZUmamlJkpZWbKpwBSZqO8C1+kTEV5F75ImYoC4ZuUmSiEG1LmoRBuSJmHEu5ImURQwj0pcwhKuCdlDkEWSZmDrJAyA1khZQayQsoMZIWUGcgKKTOQVVLGJ6ukjC7IKimjC7JOyuCCbJIysiCbpIwsyA4p4wpyiJQRBTlEyoiCHCRlPEGOkzIcOU7KcOQUKWORk6SMRE6SMhI5Tco45DwpgwhynpRBBDlPyiCCnCdlEEHOkzKIIOdJGUSQ86QMIkgDKaOQBlJGIQ2kjEIaSBmFNJAyCmkgZRTSQMoYgjSQMoYgDaSMIUgDKWMI0kDKGII0kDKGIA2kjCFIEykjCNJEygiCNJEyBmkiZQzSRMoYpImUMUgTKWOQJlLGIG2kDEHaSBmCtJEyBGkjZQjSRsoQpI2UIUgjKSOQRlJGII2kjECaSfnrgjST8tcFaSblrwvSTMpfF6SZlL9Pmkn5+6SdHBNALi+8k7lIO9kXbsk1hf/JTKSd7Au35JrC/2Qm0kH2hAVyMeGGTES6yJawSq4j3JF5SBfZElbJdYQ7Mg/pIhvCBrmK8EguJryR55M+sipskysIi+RCwjd5Lukjq8I2uYKwSC4kfJPnkj6yIuySCwjL5DLCLXki6SMrwi65gLBMLiPckieSTrIsHCH/WFglrxZkT9givaSTLAonyL8RtsgrhU+yKeyQPtJJFoUT5N8IW+SVwifZFHZIH+kki8JpsifIk4R98jLhB1kV9kkP6SRLQiNZEb5Jr3CEvERYJz+EQ6SDdJIloZGsCN+kVzhCXiKskx/CIdJBOsmj0EPuhQfSJRwhrxC2yZdwkLQK0kcehU7yU1gi7cIx8nxhn3wIB0mrIH3kUegkP4Ul0i4cI88X9smHcJC0CtJJ7oVe8i2skjbhOHmu8BLSJkgnuRf6yZewQc4L58gzhReRJkE6yb3QT76EDXJeOEeeKbyINAnSSe6FfvIpbJHTwknyTOFV5LwA0kluhaeQN2GbnBXOk4Mi28LryHkBpJPcCk8hb8I2OSucJwdFtoXXkfMCSCe5EX6ZhDfyKPwgEFrIAeGDrAuvJOcFkG7yLYxI9oRvsiS8lhwTbkk3+RZGJHvCN1kSXkuOCbekn3wJo5It4YHcCK8n+8I9eQL5EMYlG8Iy+RR+g+wL9+QJ5EMYl2wIy+RT+A2yL9yTJ5B3YXCyLKySd+FXyI7wSJ5DCKOTRWGdEH6JbAsL5DmEMDpZFNYJ4ZfItrBAnkTC+ORRuArZEpbIk0iYgNwJ1yHrwjJ5EgkTkDvhOmRdWCblLPkhXImsCcukNJI34VJkTVgmpZG8CZcia8IyKQORFWGFlJHIorBGykhkUVgjZSSyKKyRMhR5FNZJGYo8CuukDEUehA1SBiN3wgYpg5E7YYOUwcidsEHKaORG2CJlNHIjbJEyGrkRtkgZkHwJO6QMSL6EHf8BZ+Ta4OO52cEAAAAASUVORK5CYII="
+    }
+  ],
+  "imagePath": "160768009_aug_flip_2ad1_aug_color_103e_aug_crop_2198_aug_cutout_d057.png",
+  "imageData": null,
+  "imageHeight": 598,
+  "imageWidth": 800
+}

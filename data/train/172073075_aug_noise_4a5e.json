@@ -1,0 +1,100 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "Other_CL_sky",
+      "points": [
+        [
+          36.0,
+          0.0
+        ],
+        [
+          799.0,
+          61.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAvwAAAA+CAAAAAByjJDFAAACGUlEQVR4nO3d7U7DMBBEUVvi/V95UVNVDR+pnMRrz3rvET9AgtYZz6atGqDWArizIli0un0ACW3Np/7IaNd7RgC5HDeeWcDiWirOGGBB51+DMwhYxtUyMwQI726JGQKE1a+8jAGC6V9ZhgBBOFaVKYA254YyANA1qp1MAeQMLCX9h5axjaT/EDKjjowAJEwtIlOA1P2bvgCkpdI9lXUgEaXSKa0FCQgWTnBJWJJs02QXhmWId0x8eQgtRLtCLBLhhOpVqMVCXsQ+RVwzBMUtUtyVQ0Rd61CsPv4kxfMLW+8Q0VXWZmQ9buxQApJIi/KTSVqUn3jSovxElBblJ6e0KD9hpUX5SSwtyk9qaVF+kkuL8hOfmmHXpXx538H6+8T5w5X5JczOkaLqmf99daJTSznz9/C6kBQ9u//r8xT/FD4y4rzNRsVqnPl7B8oEBOH4WgIke40NCXO7F57ze3F9qYYec8Xm+CPjE8wnwjGPJzhA0i3sXniP3+FuusENT3tG4f2wBtbvhxtuivPRcER+zK6HdmFu2Il5yP5Eg6vDIwYbMBs70N7h2vd5EtFLqU5v7AfZZms+FEuUCkqG3baxd6ceBxLtug2+P9EYkHD/LfPBY4KqcOHY8No/UX4UjxacuLRpUvUpP97qmbek/15I8PMnD2708zcPxpkf/zRi/5uEn/q6+zcIpdRTF6VNLP0L5UdpaohAWXv7Bn+AOW4g0iCBAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "Superstructure_CL_road",
+      "points": [
+        [
+          354.0,
+          223.0
+        ],
+        [
+          518.0,
+          258.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAKUAAAAkCAAAAADNrKV7AAABDklEQVR4nNWW2w6EIAxEOxv//5dnozGssCqXMojzQIyU9gQKLSwvhC/aM0LlFCejxP3CobionsiK1l3ozWgKTDgQmbHlz5sTHD7IzZ4Xqxj9Z2RTh432w2bBUhZ6y0DDkZCHE+2pE+IkRl3IXGJ2w42C1EZMEpIK4jTpW2JQuZd/QQbEcmg/pLkhbeObndHs8wZIwgW5P0XiO0Rb3P5HtHA4/SxWqOWmU9wAtAUUlcniAlfTKMBkKizDeRPl7WEZwqXGvGBch49zvVrstSFrrw4TSXE50dWb9qFDL0cccwWg6NVFwisoI6HlDXmwbcMrKHMQs1GeghyLxjSUKVJU2RwVUiWGIWh5iuVWaYvwBb7dOCsTO+6VAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "Obstacle_CL_water",
+      "points": [
+        [
+          343.0,
+          293.0
+        ],
+        [
+          470.0,
+          382.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAIAAAABaCAAAAABV8AFeAAABuUlEQVR4nOWa6ZKDMAyDJU/f/5W9Q6YsN+S0dlj9KJCm6ItxjgLEV8RKjjDxzD+ShU8Ao1msoC5zKEvFw06BXA3QA4a7bbNcDVDKwc1GQMGB/lkMHOmeQ8Ig/0sIBvqfglABsGagCOAXw5T+U/O1AADVALDAxc+ZfMpBYR56ygFpECxxCBE+6ZNTFCgEwBSCFIZwCkujwTIwRvvjxDESwucFiYsgfM4Bjf0yGQm7IQvLXzYd46KlIc3/XnaL8LrxR9Q44JsTr5KeIQA3vcwglh2WxrEBgO1do6cj3h720e04axCLjwUxOSDzxw4gfkVkYn8EJKGLARz5AIz3x+maMMb6jwxE9mIAqgHyKAxj5SUAHMvyDPC2bkj89whADOBqABQDEArZqBO7GMChBfDsmgaxbNnV3Kky6d16JADtIwtmlFQov1HMLBvlj7Ne4Oq/594chIImfB54RvuDh6PG9te+wjErLvYXq2IP9kfXcaCG3sT+kM+GvDkqVF36WItlB39sAXx6jhw7O7Ko+Ea12Fb5u17+uGxqSQxaLhqrvurnjyeXZ4rGnGVThQ4dhi3Vur5TWlC760DxA8xWT5KQToocAAAAAElFTkSuQmCC"
+    },
+    {
+      "label": "Obstacle_CL_water",
+      "points": [
+        [
+          467.0,
+          184.0
+        ],
+        [
+          572.0,
+          226.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAGoAAAArCAAAAAC1TkKCAAAAzUlEQVR4nMXW4QrDMAgEYM/3f+cbC6WMkTWa6M0fKZU2X0MT0cwMJglcA/sp/yQ1lOko6qg/BISrQhuF2T11/wotFFaJuhUikCkCEczZ+QcgnDwWkcgeeiiSAlwp9Qx6/bFCMF90ermmKusEn6jqgsQfVEvh42xb9JdYNDpfC0N/t8Tr6v19Ge6rorfle3BJF41BKSTZthjBlsqeojpEBqYrq/WIPnoscmMG6KgRuk+0jTd9m0o3vG4yC/tU9v2yY4rVA9s7MI92UHOV9gLtXhxE4Qkh7AAAAABJRU5ErkJggg=="
+    },
+    {
+      "label": "Superstructure_CL_cons",
+      "points": [
+        [
+          326.0,
+          258.0
+        ],
+        [
+          495.0,
+          283.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAKoAAAAaCAAAAAAC15grAAAA0klEQVR4nM2X2xKDIAxEs///0ekUSowDKk1z6T7oiLI5BpEAagIRkxb66dxYKwjV4JLLU+v8MunChLalCmq8s9Vo+/FbcR8GTkL1EP/tB7DUZ3QoYVo5i539GmcUrOTahXpQil8kNv/UW8igjEKzbGZWqIdBOKoJek2VyLpPfQFVwvqAfM9US4yxGu5O+EpcI0g5MlK6eMhWTlUQs1PAeGyOCAJ3x2MfEic4+cRXJ14BMrKqBPs3yUV/Htzf5vmZiiKKtNZxVQLn/WX5GqQYHkqrFyK+KR15GriSAAAAAElFTkSuQmCC"
+    }
+  ],
+  "imagePath": "172073075_aug_noise_4a5e.png",
+  "imageData": null,
+  "imageHeight": 448,
+  "imageWidth": 800
+}

@@ -1,0 +1,28 @@
+{
+  "version": "5.11.3",
+  "flags": {},
+  "shapes": [
+    {
+      "label": "BS_CL_intermediate",
+      "points": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          407.0,
+          220.0
+        ]
+      ],
+      "group_id": null,
+      "description": "",
+      "shape_type": "mask",
+      "flags": {},
+      "mask": "iVBORw0KGgoAAAANSUhEUgAAAZcAAADcCAAAAACZ5bPKAAAEo0lEQVR4Ae3BCW4kRhIEQff/PzoWIrDCCBpqeHSyIrvLTLkKKVch5eoT5eoT5eoT5eoT5aoTlKtOUK4yAZSrTADlqhL+olxVwl+Uq0b4P+WqEf5PuSqEXynXYeHflOuw8G/KdUh4n3IdEt6nXD8v/IFy/bzwB8r1k8KHKNdPCh+iXD8hfIpy/YTwKco1LHyecg0Ln6dcY8JXKdeI8B3KNSJ8h3I9UHgM5Xqg8BjK9SDhcZTrQcLjKNf3hQdTru8LD6ZcXxeGKNfXhSHK9RVhlHJ9RRilXJ8RfoRyfVD4Ocr1QeHnKNefhR+mXH8WfphyvS8colzvC4co1++Eo5Trd8JRyvWrUEG5fhUqKNeb0ES53oQmykVoo7y6UEh5daGQMiq8SzqEQsqo8C7pEAopvwggfwtv5E14OCkQCim/CCB/C2/kTXg4KRAKyUHSIBSSg6RBKCQHSYHQSA6SAqGRnCQFQiE5SQqEQnKYnBYKyWFyWigkp8lhoZAcJ0eFRnKcHBUayXFyVGgkx8lRoZEcJqeFQnKYnBYKyVFyXigkR8l5oZAcJqeFQnKYnBYKyWlyVmgkp8lZoZEcJ0eFRnKenBQayXlyUmgkDeSc0EgayDmhkTSQc0IjaSDnhEbSQU4IraSDnBBaSQf5GWEH6SA/I+wgHeQHhDWkg/yAsIaUkGlhESkhw8ImUkKGhU2khAwLm0gJGRY2kRIyLGwiJWRY2ERKyLCwiZSQYWETqSGjwiZSQ0aFTaSGTAqrSA2ZFFaREjIrrCIlZFjYRErIsLCJlJBZYRUpIbPCKlJCZoVVpITMCqtICZkVVpESMiusIiVkWNhESsiwsImUkGFhEykhw8ImUkKGhU2khAwLm0gJGRY2kRIyLGwiJWRY2ERKyLCwiZSQYWETKSHDwiZSQoaFTaSEDAubSAkZFjaREjIsbCIlZFjYRErIsLCJlJBhYRMpIcPCJlJChoVNpIQMC5tICRkWNpESMixsIiVkWNhESsiwsImUkGFhEykhw8ImUkKGhU2khAwLm0gJGRY2kRIyLGwiJWRY2ERKyLCwiZSQYWETKSHDwiZSQoaFTaSEDAubSAkZFjaRGjIqbCI1ZFTYRGrIqLCJ1JBRYROpIaPCJlJDRoVNpIaMCptICRkWNpESMixsIjVkUlhFasiksIrUkElhFakhk8IqUkMmhVWkhkwKq0gNmROWkRoyJywjNWRM2EZqyJiwjdSQIWEfqSFDwj5SQ0aEjaSGjAgbSQ0ZETaSGvJgYS+pIQ8W9pIa8lhhMakhjxUWkxryQGE3qSEPFHaTGvIY4QlIDXmM8ASkhnxXeBpSQ74rPA2pId8SnonUkG8Iz0VqyDeE5yI15MvCs5Ea8mXh2UgN+ZrwhKSGfE14QlJDPi08K6khnxaeldSQTwrPS2rIJ4XnJTXkU8IzkxryKeGZSQ35sPDspIZ8RHgJUkM+IrwE6SF/EF6G9JA/CC9Desh/Ca9Eesh/Ca9Eesj7wmuRHvK+8Fqkh/xeeD3SQ34vvB7pIb8TXpH0kN8Jr0h6yD+F1yVF5B/C65Ii8g/hdUkRIYC8CS9MiggB5E14Yf8DuIPk3+cEp1IAAAAASUVORK5CYII="
+    }
+  ],
+  "imagePath": "178352548_aug_color_c94b_aug_crop_7354.png",
+  "imageData": null,
+  "imageHeight": 599,
+  "imageWidth": 800
+}

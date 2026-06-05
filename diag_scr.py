@@ -1,5 +1,7 @@
 import os
+import sys
 import random
+import re
 import json
 import base64
 import yaml
@@ -12,6 +14,20 @@ from PIL import Image, ImageDraw, ImageFont
 
 # Базовая директория проекта. Так скрипт можно запускать из любой папки.
 BASE_DIR = Path(__file__).resolve().parent
+
+# ============================================================
+# ТЕСТОВЫЙ РЕЖИМ
+# ============================================================
+# Логика выбора файлов:
+# 1) Если файлы переданы через параметры запуска, анализ идет строго в этом порядке:
+#    python "Вставленный код_тестовый_порядок.py" 001.jpg 005.jpg 002.jpg
+#
+# 2) Если параметры запуска НЕ переданы, скрипт работает как раньше:
+#    случайно выбирает TEST_SAMPLE_LIMIT файлов из data/val.
+#
+# Можно писать имя картинки или имя JSON-разметки:
+# 001.jpg, 001.png, 001.json
+TEST_SAMPLE_LIMIT = 5
 
 # Шрифты с поддержкой кириллицы. Первый найденный будет использован для подписей.
 FONT_CANDIDATES = [
@@ -140,6 +156,74 @@ def mask_to_rgb(mask, colors):
     for idx in range(1, len(colors)): rgb[mask == idx] = colors[idx]
     return rgb
 
+
+def natural_sort_key(value):
+    """
+    Естественная сортировка имен файлов:
+    img_2 идет раньше img_10.
+    """
+    value = str(value)
+    return [int(part) if part.isdigit() else part.lower() for part in re.split(r"(\d+)", value)]
+
+
+def resolve_jsons_in_order(val_dir, requested_items, sample_limit):
+    """
+    Возвращает список JSON-файлов для анализа в строго заданном порядке.
+
+    requested_items:
+      - имена изображений: example.jpg, example.png
+      - имена разметки: example.json
+      - относительные пути от data/val
+
+    Если requested_items пустой, берутся первые sample_limit JSON-файлов
+    в естественной сортировке.
+    """
+    available_jsons = [
+        f for f in val_dir.glob("*.json")
+        if "_aug_" not in f.name
+    ]
+
+    if not available_jsons:
+        raise FileNotFoundError(f"В папке {val_dir} не найдено JSON-файлов разметки.")
+
+    # Режим по умолчанию: если параметры запуска не переданы, работаем как раньше — случайная выборка.
+    if not requested_items:
+        k = min(sample_limit, len(available_jsons))
+        return random.sample(available_jsons, k)
+
+    selected_jsons = []
+    missing_items = []
+
+    for item in requested_items:
+        item_path = Path(str(item).strip().strip('"').strip("'"))
+
+        if not item_path.name:
+            continue
+
+        # Если передали имя картинки, заменяем расширение на .json.
+        # Если передали .json, оставляем .json.
+        json_name = item_path.name if item_path.suffix.lower() == ".json" else item_path.with_suffix(".json").name
+        json_path = val_dir / json_name
+
+        if json_path.exists() and "_aug_" not in json_path.name:
+            selected_jsons.append(json_path)
+        else:
+            missing_items.append(str(item))
+
+    if missing_items:
+        available_names = ", ".join(
+            f.name for f in sorted(available_jsons, key=lambda x: natural_sort_key(x.name))[:20]
+        )
+        raise FileNotFoundError(
+            "Не найдены JSON-разметки для следующих файлов: "
+            + ", ".join(missing_items)
+            + f"\nПроверьте имена файлов в аргументах командной строки."
+            + f"\nПервые доступные JSON в data/val: {available_names}"
+        )
+
+    return selected_jsons
+
+
 # ==========================================
 # 🛠 3. ГЛАВНЫЙ ЦИКЛ ДИАГНОСТИКИ
 # ==========================================
@@ -171,23 +255,40 @@ def main():
     print("🌀 Загрузка модели...")
     model = tf.keras.models.load_model(str(MODEL_PATH), compile=False)
     
-    # Сбор и выбор файлов
-    json_files = list(VAL_DIR.glob("*.json"))
-    # Игнорируем аугментации, если они есть в val
-    json_files = [f for f in json_files if "_aug_" not in f.name]
-    
-    if len(json_files) < 5:
-        print(f"❌ Ошибка: В data/val меньше 5 оригинальных файлов ({len(json_files)})")
+    # Сбор файлов для тестового анализа.
+    # 1) Если переданы аргументы командной строки, используется их порядок.
+    # 2) Если аргументы не переданы, выполняется случайная выборка TEST_SAMPLE_LIMIT файлов.
+    requested_order = sys.argv[1:]
+
+    try:
+        selected_jsons = resolve_jsons_in_order(
+            VAL_DIR,
+            requested_items=requested_order,
+            sample_limit=TEST_SAMPLE_LIMIT,
+        )
+    except FileNotFoundError as e:
+        print(f"❌ Ошибка: {e}")
         return
-    
-    selected_jsons = random.sample(json_files, 5)
-    
+
+    if not selected_jsons:
+        print("❌ Ошибка: список файлов для анализа пуст.")
+        return
+
+    if requested_order:
+        print("\n📌 Режим: порядок из параметров запуска.")
+    else:
+        print(f"\n📌 Режим: случайная выборка {len(selected_jsons)} файлов.")
+
+    print("📌 Порядок анализа:")
+    for n, j_path in enumerate(selected_jsons, start=1):
+        print(f"   {n}. {j_path.name}")
+
     grid_rows = []
     
     # Стандартизируем размер для вывода на панель (например, 320x320)
     DISPLAY_SIZE = (320, 320)
     
-    print("\n🔬 Начинаю анализ 5 образцов...")
+    print(f"\n🔬 Начинаю анализ {len(selected_jsons)} образцов...")
     for j_path in selected_jsons:
         # Ищем картинку
         img_path = None
@@ -322,7 +423,7 @@ def main():
 
     header = put_text_ru(
         header,
-        "Прогнозирование модели",
+        "Прогнозирование разметки",
         (w_p * 2 + 10, 15),
         font_size=24,
         color=(255, 255, 255),
