@@ -1,0 +1,611 @@
+import os
+import sys
+import random
+import json
+import base64
+import yaml
+from pathlib import Path
+import cv2
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras import mixed_precision
+from PIL import Image, ImageDraw, ImageFont
+
+# Базовая директория проекта. Так скрипт можно запускать из любой папки.
+BASE_DIR = Path(__file__).resolve().parent
+
+# ============================================================
+# ТЕСТОВЫЙ РЕЖИМ
+# ============================================================
+# Логика выбора файлов:
+# 1) Если файлы переданы через параметры запуска, анализ идет строго в этом порядке:
+#    python "Вставленный код_тестовый_порядок.py" 001.jpg 005.jpg 002.jpg
+#
+# 2) Если параметры запуска НЕ переданы, скрипт работает как раньше:
+#    случайно выбирает TEST_SAMPLE_LIMIT файлов из data/val.
+#
+# Можно писать имя картинки или имя JSON-разметки:
+# 001.jpg, 001.png, 001.json
+TEST_SAMPLE_LIMIT = 5
+
+# Шрифты с поддержкой кириллицы. Первый найденный будет использован для подписей.
+FONT_CANDIDATES = [
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    "/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf",
+    "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+    "C:/Windows/Fonts/arial.ttf",
+    "C:/Windows/Fonts/calibri.ttf",
+]
+
+FONT_PATH = next((p for p in FONT_CANDIDATES if Path(p).exists()), None)
+
+
+def _bgr_to_rgb_color(color):
+    """Перевод цвета OpenCV BGR в PIL RGB."""
+    return (int(color[2]), int(color[1]), int(color[0]))
+
+
+def _get_font(font_size):
+    """Возвращает TTF-шрифт с кириллицей или стандартный шрифт PIL."""
+    if FONT_PATH:
+        return ImageFont.truetype(FONT_PATH, font_size)
+    return ImageFont.load_default()
+
+
+def _strip_status_icons(text):
+    """
+    Убирает emoji-иконки из текста на изображении.
+    Некоторые TTF-шрифты в WSL не содержат ✅ ⚠️ ❌, из-за этого могут быть квадраты.
+    В терминале исходный текст с emoji остается без изменений.
+    """
+    return (
+        str(text)
+        .replace("✅", "")
+        .replace("⚠️", "")
+        .replace("⚠", "")
+        .replace("❌", "")
+        .strip()
+    )
+
+
+def put_text_ru(
+    img,
+    text,
+    position,
+    font_size=28,
+    color=(255, 255, 255),
+    background_box=None,
+    background_color=(0, 0, 0),
+    max_width=None,
+):
+    """
+    Выводит русский текст на OpenCV-изображение через Pillow.
+
+    img: изображение OpenCV в формате BGR
+    text: строка на русском
+    position: координаты верхнего левого угла текста (x, y)
+    font_size: размер шрифта
+    color: цвет текста в формате BGR
+    background_box: прямоугольник фона (x1, y1, x2, y2) или None
+    background_color: цвет фона в формате BGR
+    max_width: максимальная ширина текста; если текст не помещается, шрифт уменьшается
+    """
+    text = str(text)
+
+    # OpenCV BGR -> PIL RGB
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    pil_img = Image.fromarray(img_rgb)
+
+    draw = ImageDraw.Draw(pil_img)
+    x, y = position
+
+    # Подбор размера шрифта под заданную ширину
+    current_size = font_size
+    font = _get_font(current_size)
+
+    if max_width is not None:
+        while current_size > 8:
+            bbox = draw.textbbox((x, y), text, font=font)
+            text_width = bbox[2] - bbox[0]
+            if text_width <= max_width:
+                break
+            current_size -= 1
+            font = _get_font(current_size)
+
+    if background_box is not None:
+        draw.rectangle(background_box, fill=_bgr_to_rgb_color(background_color))
+
+    draw.text((x, y), text, font=font, fill=_bgr_to_rgb_color(color))
+
+    # PIL RGB -> OpenCV BGR
+    return cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
+
+
+# ==========================================
+# 🚀 1. ИНИЦИАЛИЗАЦИЯ И СЕТАП ЖЕЛЕЗА
+# ==========================================
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+
+
+def setup_hardware():
+    """Memory Growth и Mixed Precision"""
+    gpus = tf.config.list_physical_devices("GPU")
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            print("✅ Memory Growth включен.")
+        except RuntimeError:
+            pass
+
+    # Включаем Mixed Precision, чтобы диагност читал модель корректно
+    mixed_precision.set_global_policy("mixed_float16")
+    print("⚡ Mixed Precision включен.")
+
+
+# ==========================================
+# 🧬 2. ВСПОМОГАТЕЛЬНАЯ МАТЕМАТИКА (dataset.py)
+# ==========================================
+def decode_mask(b64_str):
+    try:
+        mask_bytes = base64.b64decode(b64_str)
+        m_img = cv2.imdecode(np.frombuffer(mask_bytes, np.uint8), cv2.IMREAD_UNCHANGED)
+        if m_img is not None and len(m_img.shape) > 2:
+            m_img = np.max(m_img, axis=2)
+        return m_img
+    except Exception:
+        return None
+
+
+# Финальная цветовая схема из правой таблицы.
+# enabled можно переключать для каждого итогового класса: True — показывать цвет,
+# False — закрашивать этот класс фоном.
+# source_indices/source_names задают классы исходной модели, которые попадают
+# в итоговый цвет. Все неуказанные классы автоматически остаются фоном.
+FINAL_CLASS_COLOR_RULES = [
+    {
+        "display_index": 0,
+        "display_name": "фон изображения",
+        "color_rgb": (0, 0, 0),
+        "enabled": True,
+        "source_indices": [0],
+        "source_names": ["Background"],
+    },
+    {
+        "display_index": 1,
+        "display_name": "концевая опора",
+        "color_rgb": (230, 25, 75),
+        "enabled": True,
+        "source_indices": [1],
+        "source_names": ["BS_CL_es"],
+    },
+    {
+        "display_index": 2,
+        "display_name": "промежуточная опора",
+        "color_rgb": (60, 180, 75),
+        "enabled": True,
+        "source_indices": [2],
+        "source_names": ["BS_CL_intermediate"],
+    },
+    {
+        "display_index": 3,
+        "display_name": "водное препятствие",
+        "color_rgb": (255, 225, 25),
+        "enabled": True,
+        "source_indices": [7],
+        "source_names": ["Obstacle_CL_water"],
+    },
+    {
+        "display_index": 4,
+        "display_name": "небо",
+        "color_rgb": (0, 130, 200),
+        "enabled": True,
+        "source_indices": [8],
+        "source_names": ["Other_CL_sky"],
+    },
+    {
+        "display_index": 5,
+        "display_name": "пролетное строение",
+        "color_rgb": (245, 130, 48),
+        "enabled": True,
+        "source_indices": [9, 10, 11],
+        "source_names": [
+            "Superstructure_CL_cons",
+            "Superstructure_CL_cons_under",
+            "Superstructure_CL_road",
+        ],
+    },
+]
+
+
+def _rgb_to_bgr(color_rgb):
+    """Перевод цвета RGB из таблицы в BGR для OpenCV."""
+    r, g, b = color_rgb
+    return (int(b), int(g), int(r))
+
+
+def _resolve_source_indices(rule, class_names):
+    """Возвращает существующие индексы исходных классов для правила окраски."""
+    resolved = set()
+    for idx in rule.get("source_indices", []):
+        if 0 <= idx < len(class_names):
+            resolved.add(int(idx))
+    for name in rule.get("source_names", []):
+        if name in class_names:
+            resolved.add(class_names.index(name))
+    return sorted(resolved)
+
+
+def _build_final_color_rules(class_names):
+    """Готовит правила финальной раскраски с учетом текущего config.yaml."""
+    prepared_rules = []
+    for rule in FINAL_CLASS_COLOR_RULES:
+        color_rgb = tuple(rule["color_rgb"])
+        prepared_rules.append(
+            {
+                **rule,
+                "color_bgr": _rgb_to_bgr(color_rgb),
+                "resolved_source_indices": _resolve_source_indices(rule, class_names),
+            }
+        )
+    return prepared_rules
+
+
+def remap_mask_to_final_classes(mask, color_rules):
+    """
+    Переводит исходные индексы модели в итоговые индексы классов из правой таблицы.
+
+    Неуказанные классы и отключенные через enabled=False классы становятся фоном 0.
+    """
+    remapped = np.zeros(mask.shape, dtype=np.uint8)
+    for rule in color_rules:
+        if rule["display_index"] == 0 or not rule.get("enabled", True):
+            continue
+        display_index = int(rule["display_index"])
+        for source_idx in rule["resolved_source_indices"]:
+            remapped[mask == source_idx] = display_index
+    return remapped
+
+
+def mask_to_rgb(mask, color_rules):
+    """
+    Красит маску по финальным правилам из правой таблицы.
+
+    На вход ожидается маска уже в итоговых индексах display_index. Все отключенные
+    и отсутствующие в таблице классы остаются черным фоном.
+    """
+    rgb = np.zeros((*mask.shape, 3), dtype=np.uint8)
+    for rule in color_rules:
+        if not rule.get("enabled", True):
+            continue
+        rgb[mask == rule["display_index"]] = np.array(
+            rule["color_rgb"], dtype=np.uint8
+        )
+    return rgb
+
+
+def _save_color_key(class_names, color_rules, output_path):
+    """Сохраняет ключ финального соответствия класс -> цвет в JSON-файл."""
+    key_payload = []
+    covered_indices = set()
+
+    for rule in color_rules:
+        b, g, r = [int(c) for c in rule["color_bgr"]]
+        resolved_indices = rule["resolved_source_indices"]
+        covered_indices.update(resolved_indices)
+        key_payload.append(
+            {
+                "display_index": rule["display_index"],
+                "display_name": rule["display_name"],
+                "enabled": bool(rule.get("enabled", True)),
+                "source_indices": resolved_indices,
+                "source_names": [class_names[idx] for idx in resolved_indices],
+                "color_bgr": [b, g, r],
+                "color_rgb": [r, g, b],
+                "color_hex_rgb": f"#{r:02X}{g:02X}{b:02X}",
+            }
+        )
+
+    hidden_as_background = [
+        {
+            "source_index": idx,
+            "source_name": class_name,
+            "reason": "not_listed_in_final_table",
+        }
+        for idx, class_name in enumerate(class_names)
+        if idx not in covered_indices
+    ]
+
+    payload = {
+        "final_class_color_rules": key_payload,
+        "hidden_as_background": hidden_as_background,
+    }
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
+
+
+def resolve_jsons_in_order(
+    val_dir: Path, requested_items: list[str], sample_limit: int
+) -> list[Path]:
+    """Resolve requested image/JSON names to JSON files, preserving order.
+
+    If no names are requested, returns a random sample from ``val_dir``.
+    """
+    json_files = sorted(val_dir.glob("*.json"))
+    if not requested_items:
+        if len(json_files) <= sample_limit:
+            return json_files
+        return random.sample(json_files, sample_limit)
+
+    resolved = []
+    by_stem = {path.stem.lower(): path for path in json_files}
+    by_name = {path.name.lower(): path for path in json_files}
+
+    for item in requested_items:
+        requested = Path(item)
+        candidates = []
+
+        if requested.suffix.lower() == ".json":
+            candidates.append(val_dir / requested.name)
+            candidates.append(requested)
+        else:
+            candidates.append(val_dir / f"{requested.stem}.json")
+            candidates.append(requested.with_suffix(".json"))
+
+        match = next(
+            (candidate for candidate in candidates if candidate.exists()), None
+        )
+        if match is None:
+            match = by_name.get(requested.name.lower()) or by_stem.get(
+                requested.stem.lower()
+            )
+
+        if match is None:
+            raise FileNotFoundError(
+                f"не найдена JSON-разметка для '{item}' в {val_dir}"
+            )
+
+        resolved.append(match)
+
+    return resolved
+
+
+# ==========================================
+# 🛠 3. ГЛАВНЫЙ ЦИКЛ ДИАГНОСТИКИ
+# ==========================================
+def main():
+    setup_hardware()
+
+    # Загрузка конфига
+    CONFIG_PATH = BASE_DIR / "configs" / "config.yaml"
+    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+        config = yaml.safe_load(f)
+
+    VAL_DIR = BASE_DIR / "data" / "val"
+    MODEL_PATH = BASE_DIR / "models" / "final_model.keras"
+    OUTPUT_PATH = BASE_DIR / "artifacts" / "diagnostics_C.png"
+    COLOR_KEY_PATH = BASE_DIR / "artifacts" / "diagnostics_C_color_key.json"
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    IMG_SIZE = tuple(config["data"]["image_size"])
+    CLASS_NAMES = config["data"]["classes"]
+
+    if not MODEL_PATH.exists():
+        print(f"❌ Ошибка: Модель не найдена по пути {MODEL_PATH}")
+        return
+
+    # Финальная палитра из правой таблицы: все неуказанные классы скрываются фоном
+    COLOR_RULES = _build_final_color_rules(CLASS_NAMES)
+    _save_color_key(CLASS_NAMES, COLOR_RULES, COLOR_KEY_PATH)
+    print(f"🎨 Ключ цветов сохранен в: {COLOR_KEY_PATH}")
+
+    # Загрузка модели (БЕЗ компиляции, нам только предсказания)
+    print("🌀 Загрузка модели...")
+    model = tf.keras.models.load_model(str(MODEL_PATH), compile=False)
+
+    # Сбор файлов для тестового анализа.
+    # 1) Если переданы аргументы командной строки, используется их порядок.
+    # 2) Если аргументы не переданы, выполняется случайная выборка TEST_SAMPLE_LIMIT файлов.
+    requested_order = sys.argv[1:]
+
+    try:
+        selected_jsons = resolve_jsons_in_order(
+            VAL_DIR,
+            requested_items=requested_order,
+            sample_limit=TEST_SAMPLE_LIMIT,
+        )
+    except FileNotFoundError as e:
+        print(f"❌ Ошибка: {e}")
+        return
+
+    if not selected_jsons:
+        print("❌ Ошибка: список файлов для анализа пуст.")
+        return
+
+    if requested_order:
+        print("\n📌 Режим: порядок из параметров запуска.")
+    else:
+        print(f"\n📌 Режим: случайная выборка {len(selected_jsons)} файлов.")
+
+    print("📌 Порядок анализа:")
+    for n, j_path in enumerate(selected_jsons, start=1):
+        print(f"   {n}. {j_path.name}")
+
+    grid_rows = []
+
+    # Стандартизируем размер для вывода на панель (например, 320x320)
+    DISPLAY_SIZE = (320, 320)
+
+    print(f"\n🔬 Начинаю анализ {len(selected_jsons)} образцов...")
+    for j_path in selected_jsons:
+        # Ищем картинку
+        img_path = None
+        for ext in [".jpg", ".jpeg", ".png", ".bmp"]:
+            if j_path.with_suffix(ext).exists():
+                img_path = j_path.with_suffix(ext)
+                break
+        if not img_path:
+            continue
+
+        # --- 1. ОРИГИНАЛ ---
+        img_bgr = cv2.imread(str(img_path))
+        orig_h, orig_w = img_bgr.shape[:2]
+
+        # --- 2. ЭТАЛОН (GT) ---
+        mask_gt = np.zeros((orig_h, orig_w), dtype=np.uint8)
+        with open(j_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            if "shapes" in data:
+                for shape in data["shapes"]:
+                    label = shape.get("label", "")
+                    if label in CLASS_NAMES:
+                        idx = CLASS_NAMES.index(label)
+                        pts = shape.get("points", [])
+                        sType = shape.get("shape_type", "")
+                        try:
+                            if sType == "mask" and "mask" in shape:
+                                m_img = decode_mask(shape["mask"])
+                                if m_img is not None and len(pts) >= 2:
+                                    x, y = (
+                                        int(min(pts[0][0], pts[1][0])),
+                                        int(min(pts[0][1], pts[1][1])),
+                                    )
+                                    hm, wm = m_img.shape[:2]
+                                    ye, xe = min(y + hm, orig_h), min(x + wm, orig_w)
+                                    roi, m_crop = (
+                                        mask_gt[max(0, y) : ye, max(0, x) : xe],
+                                        m_img[
+                                            max(0, y) - y : ye - y,
+                                            max(0, x) - x : xe - x,
+                                        ],
+                                    )
+                                    roi[m_crop > 0] = idx
+                            elif sType == "rectangle" or len(pts) == 2:
+                                cv2.rectangle(
+                                    mask_gt,
+                                    (int(pts[0][0]), int(pts[0][1])),
+                                    (int(pts[1][0]), int(pts[1][1])),
+                                    idx,
+                                    -1,
+                                )
+                            elif sType == "polygon" or len(pts) >= 3:
+                                cv2.fillPoly(mask_gt, [np.array(pts, np.int32)], idx)
+                        except Exception as exc:
+                            print(f"⚠️ Не удалось отрисовать shape {label}: {exc}")
+
+        # --- 3. ПРЕДСКАЗАНИЕ (PRED) ---
+        # Подготовка тензора
+        img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+        inp = cv2.resize(img_rgb, IMG_SIZE, interpolation=cv2.INTER_LINEAR)
+        inp = np.expand_dims(inp.astype(np.float32), axis=0)
+
+        # Инференс и postprocess
+        pred_probs = model.predict(inp, verbose=0)[0]
+        pred_mask = np.argmax(pred_probs, axis=-1).astype(np.uint8)
+
+        # Обязательно возвращаем маску к оригинальному размеру для честного сравнения!
+        pred_mask = cv2.resize(
+            pred_mask, (orig_w, orig_h), interpolation=cv2.INTER_NEAREST
+        )
+
+        # Переводим исходные классы модели в финальные классы из правой таблицы.
+        # Все классы вне правой таблицы или отключенные через enabled=False считаются фоном.
+        mask_gt_final = remap_mask_to_final_classes(mask_gt, COLOR_RULES)
+        pred_mask_final = remap_mask_to_final_classes(pred_mask, COLOR_RULES)
+
+        # --- 4. ОЦЕНКА ОШИБОК ПОД МИКРОСКОПОМ (ПО ФИНАЛЬНЫМ КЛАССАМ) ---
+        # Где реально есть видимые объекты из финальной таблицы (не фон)
+        gt_objects_mask = mask_gt_final > 0
+        total_gt_pixels = np.sum(gt_objects_mask)
+
+        # Где сеть угадала ИМЕННО ПРАВИЛЬНЫЙ ФИНАЛЬНЫЙ КЛАСС (И это не фон)
+        correct_pixels_mask = (pred_mask_final == mask_gt_final) & gt_objects_mask
+        correct_pixels = np.sum(correct_pixels_mask)
+
+        # Считаем процент именно ВЕРНЫХ совпадений
+        if total_gt_pixels > 0:
+            true_accuracy = (correct_pixels / total_gt_pixels) * 100
+
+            if true_accuracy > 50:
+                match = f"✅ Точное попадание: {true_accuracy:.1f}%"
+            elif true_accuracy > 10:
+                match = f"⚠️ Частичное совпадение: {true_accuracy:.1f}%"
+            else:
+                match = f"❌ Промах (Не тот класс): {true_accuracy:.1f}%"
+        else:
+            # Если на картинке вообще нет объектов (только фон)
+            if np.sum(pred_mask_final > 0) > 0:
+                match = "❌ Галлюцинация (Нарисовала объект на фоне)"
+            else:
+                match = "✅ Идеально чистый фон"
+
+        # --- 5. КОМПОНОВКА ПАНЕЛИ ---
+        p1 = cv2.resize(img_bgr, DISPLAY_SIZE)
+
+        # Красим маски в BGR для сохранения в файл
+        m_gt_rgb = mask_to_rgb(mask_gt_final, COLOR_RULES)
+        m_gt_bgr = cv2.cvtColor(m_gt_rgb, cv2.COLOR_RGB2BGR)
+        p2 = cv2.resize(m_gt_bgr, DISPLAY_SIZE, interpolation=cv2.INTER_NEAREST)
+
+        m_pred_rgb = mask_to_rgb(pred_mask_final, COLOR_RULES)
+        m_pred_bgr = cv2.cvtColor(m_pred_rgb, cv2.COLOR_RGB2BGR)
+        p3 = cv2.resize(m_pred_bgr, DISPLAY_SIZE, interpolation=cv2.INTER_NEAREST)
+
+        # Добавляем текстовый отчет на панель через Pillow, чтобы русский текст не превращался в "????"
+        match_for_image = _strip_status_icons(match)
+        p3 = put_text_ru(
+            p3,
+            match_for_image,
+            (8, DISPLAY_SIZE[1] - 25),
+            font_size=16,
+            color=(255, 255, 255),
+            background_box=(0, DISPLAY_SIZE[1] - 32, DISPLAY_SIZE[0], DISPLAY_SIZE[1]),
+            background_color=(0, 0, 0),
+            max_width=DISPLAY_SIZE[0] - 16,
+        )
+
+        row = np.hstack([p1, p2, p3])
+        grid_rows.append(row)
+        print(f"   Обработан файл {j_path.name}: {match}")
+
+    # Финальная склейка и сохранение
+    print("\n✅ Компоновка диагностической панели...")
+    final_grid = np.vstack(grid_rows)
+    # Добавляем заголовки через Pillow, чтобы кириллица корректно отображалась на изображении
+    header = np.zeros((60, final_grid.shape[1], 3), dtype=np.uint8)
+    w_p = DISPLAY_SIZE[0]
+
+    header = put_text_ru(
+        header,
+        "Исходное изображение",
+        (10, 15),
+        font_size=24,
+        color=(255, 255, 255),
+        max_width=w_p - 20,
+    )
+
+    header = put_text_ru(
+        header,
+        "Экспертная разметка",
+        (w_p + 10, 15),
+        font_size=24,
+        color=(255, 255, 255),
+        max_width=w_p - 20,
+    )
+
+    header = put_text_ru(
+        header,
+        "Прогнозирование разметки",
+        (w_p * 2 + 10, 15),
+        font_size=24,
+        color=(255, 255, 255),
+        max_width=w_p - 20,
+    )
+
+    final_output = np.vstack([header, final_grid])
+    cv2.imwrite(str(OUTPUT_PATH), final_output)
+    print(f"🎉 Готово! Диагностика с финальной раскраской сохранена в: {OUTPUT_PATH}")
+
+
+if __name__ == "__main__":
+    main()
