@@ -16,7 +16,6 @@ select_photos.py
     – ESC или Q → досрочно завершить работу скрипта.
 """
 
-import argparse
 import logging
 from pathlib import Path
 
