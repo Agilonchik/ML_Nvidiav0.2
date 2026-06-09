@@ -2,6 +2,7 @@ import os
 import sys
 import random
 import json
+import csv
 import base64
 import yaml
 from pathlib import Path
@@ -385,6 +386,7 @@ def main():
     VAL_DIR = BASE_DIR / "data" / "val"
     MODEL_PATH = BASE_DIR / "models" / "final_model.keras"
     OUTPUT_PATH = BASE_DIR / "artifacts" / "diagnostics_C.png"
+    METRICS_CSV_PATH = BASE_DIR / "artifacts" / "diagnostics_C_metrics.csv"
     COLOR_KEY_PATH = BASE_DIR / "artifacts" / "diagnostics_C_color_key.json"
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     IMG_SIZE = tuple(config["data"]["image_size"])
@@ -432,6 +434,7 @@ def main():
         print(f"   {n}. {j_path.name}")
 
     grid_rows = []
+    metrics_rows = []
 
     # Стандартизируем размер для вывода на панель (например, 320x320)
     DISPLAY_SIZE = (320, 320)
@@ -522,46 +525,42 @@ def main():
         correct_pixels_mask = (pred_mask_final == mask_gt_final) & gt_objects_mask
         correct_pixels = np.sum(correct_pixels_mask)
 
-        # Считаем процент именно ВЕРНЫХ совпадений.
-        # Эта оценка нужна на самой диагностической картинке, чтобы статус
-        # (например, «чистый фон» или «галлюцинация») не выглядел как
-        # качественная оценка без численного процента.
+        # Считаем процент именно ВЕРНЫХ совпадений только для CSV-отчета.
+        # На диагностическую картинку точность не выводится ни числом, ни словами.
+        predicted_object_pixels = int(np.sum(pred_mask_final > 0))
         if total_gt_pixels > 0:
             true_accuracy = (correct_pixels / total_gt_pixels) * 100
-            accuracy_label = f"Точность объектов: {true_accuracy:.1f}%"
 
             if true_accuracy > 50:
-                match = f"✅ Точное попадание: {true_accuracy:.1f}%"
+                match = "Точное попадание"
             elif true_accuracy > 10:
-                match = f"⚠️ Частичное совпадение: {true_accuracy:.1f}%"
+                match = "Частичное совпадение"
             else:
-                match = f"❌ Промах (Не тот класс): {true_accuracy:.1f}%"
+                match = "Промах (не тот класс)"
         else:
             # Если на картинке вообще нет объектов из финальной таблицы,
-            # показываем процент по сценарию «фон»: 100% для чистого фона и
-            # 0% для ложной отрисовки объекта. Так панель не вводит в
-            # заблуждение отсутствием численной точности.
-            if np.sum(pred_mask_final > 0) > 0:
+            # качество фонового сценария также записываем только в CSV.
+            if predicted_object_pixels > 0:
                 true_accuracy = 0.0
-                accuracy_label = f"Точность фона: {true_accuracy:.1f}%"
-                match = f"❌ Галлюцинация: {true_accuracy:.1f}% (объект на фоне)"
+                match = "Галлюцинация (объект на фоне)"
             else:
                 true_accuracy = 100.0
-                accuracy_label = f"Точность фона: {true_accuracy:.1f}%"
-                match = f"✅ Чистый фон: {true_accuracy:.1f}%"
+                match = "Чистый фон"
+
+        metrics_rows.append(
+            {
+                "json_file": j_path.name,
+                "image_file": img_path.name,
+                "total_gt_object_pixels": int(total_gt_pixels),
+                "correct_object_pixels": int(correct_pixels),
+                "predicted_object_pixels": predicted_object_pixels,
+                "accuracy_percent": round(float(true_accuracy), 2),
+                "status": match,
+            }
+        )
 
         # --- 5. КОМПОНОВКА ПАНЕЛИ ---
         p1 = cv2.resize(img_bgr, DISPLAY_SIZE)
-        p1 = put_text_ru(
-            p1,
-            accuracy_label,
-            (8, 8),
-            font_size=18,
-            color=(255, 255, 255),
-            background_box=(0, 0, DISPLAY_SIZE[0], 34),
-            background_color=(0, 0, 0),
-            max_width=DISPLAY_SIZE[0] - 16,
-        )
 
         # Красим маски в BGR для сохранения в файл
         m_gt_rgb = mask_to_rgb(mask_gt_final, COLOR_RULES)
@@ -572,22 +571,16 @@ def main():
         m_pred_bgr = cv2.cvtColor(m_pred_rgb, cv2.COLOR_RGB2BGR)
         p3 = cv2.resize(m_pred_bgr, DISPLAY_SIZE, interpolation=cv2.INTER_NEAREST)
 
-        # Добавляем текстовый отчет на панель через Pillow, чтобы русский текст не превращался в "????"
-        match_for_image = _strip_status_icons(match)
-        p3 = put_text_ru(
-            p3,
-            match_for_image,
-            (8, DISPLAY_SIZE[1] - 25),
-            font_size=16,
-            color=(255, 255, 255),
-            background_box=(0, DISPLAY_SIZE[1] - 32, DISPLAY_SIZE[0], DISPLAY_SIZE[1]),
-            background_color=(0, 0, 0),
-            max_width=DISPLAY_SIZE[0] - 16,
-        )
-
         row = np.hstack([p1, p2, p3])
         grid_rows.append(row)
-        print(f"   Обработан файл {j_path.name}: {match}")
+        print(f"   Обработан файл {j_path.name}")
+
+    if metrics_rows:
+        with open(METRICS_CSV_PATH, "w", newline="", encoding="utf-8-sig") as f:
+            writer = csv.DictWriter(f, fieldnames=list(metrics_rows[0].keys()))
+            writer.writeheader()
+            writer.writerows(metrics_rows)
+        print(f"📄 CSV-отчет точности сохранен в: {METRICS_CSV_PATH}")
 
     # Финальная склейка и сохранение
     print("\n✅ Компоновка диагностической панели...")
