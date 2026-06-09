@@ -103,9 +103,16 @@ class ModelBuilder:
         self.logger = logger
         self.img_size = tuple(config["data"]["image_size"]) + (3,)
 
-    def build(self, trainable_encoder=False) -> tf.keras.Model:
+    def build(
+        self, trainable_encoder=False, encoder_weights="imagenet"
+    ) -> tf.keras.Model:
+        if encoder_weights in (None, "none", "None", "NONE"):
+            encoder_weights = None
+
         self.logger.info(
-            f"🚀 Building U-Net with MobileNetV2. Encoder Trainable: {trainable_encoder}"
+            "🚀 Building U-Net with MobileNetV2. "
+            f"Encoder Trainable: {trainable_encoder}. "
+            f"Encoder weights: {encoder_weights or 'random'}"
         )
 
         inputs = layers.Input(shape=self.img_size)
@@ -113,13 +120,14 @@ class ModelBuilder:
         # 1. Спец-препроцессинг для MobileNetV2 (от -1 до 1)
         x = tf.keras.applications.mobilenet_v2.preprocess_input(inputs)
 
-        # 2. ЗАГРУЖАЕМ ПРЕДОБУЧЕННЫЙ "МОЗГ" (ImageNet)
+        # 2. Подключаем энкодер: ImageNet-веса или случайная инициализация
         encoder = tf.keras.applications.MobileNetV2(
-            input_tensor=x, weights="imagenet", include_top=False, alpha=1.0
+            input_tensor=x, weights=encoder_weights, include_top=False, alpha=1.0
         )
 
         # Устанавливаем статус заморозки (True/False)
         encoder.trainable = trainable_encoder
+        encoder_layer_names = {layer.name for layer in encoder.layers}
 
         # 3. Достаем слои для Skip Connections
         s1 = inputs  # 512x512
@@ -152,11 +160,15 @@ class ModelBuilder:
         )(u5)
 
         model = models.Model(inputs, outputs)
+        model.encoder_layer_names = encoder_layer_names
 
         # --- ⚖️ ДИНАМИЧЕСКИЙ LEARNING RATE ---
-        if trainable_encoder:
+        if trainable_encoder and encoder_weights == "imagenet":
             lr = 1e-5  # Медленно, чтобы не стереть память MobileNet
             self.logger.info("🐢 Используется низкий LR (1e-5) для Fine-Tuning")
+        elif trainable_encoder:
+            lr = self.config["model"].get("learning_rate", 5e-5)
+            self.logger.info(f"🌱 Используется LR ({lr}) для обучения энкодера с нуля")
         else:
             lr = 1e-3  # Быстро, чтобы обучить пустой декодер
             self.logger.info("⚡ Используется высокий LR (1e-3) для Warm-Up")
