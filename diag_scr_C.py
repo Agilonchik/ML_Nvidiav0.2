@@ -522,9 +522,13 @@ def main():
         correct_pixels_mask = (pred_mask_final == mask_gt_final) & gt_objects_mask
         correct_pixels = np.sum(correct_pixels_mask)
 
-        # Считаем процент именно ВЕРНЫХ совпадений
+        # Считаем процент именно ВЕРНЫХ совпадений.
+        # Эта оценка нужна на самой диагностической картинке, чтобы статус
+        # (например, «чистый фон» или «галлюцинация») не выглядел как
+        # качественная оценка без численного процента.
         if total_gt_pixels > 0:
             true_accuracy = (correct_pixels / total_gt_pixels) * 100
+            accuracy_label = f"Точность объектов: {true_accuracy:.1f}%"
 
             if true_accuracy > 50:
                 match = f"✅ Точное попадание: {true_accuracy:.1f}%"
@@ -533,14 +537,31 @@ def main():
             else:
                 match = f"❌ Промах (Не тот класс): {true_accuracy:.1f}%"
         else:
-            # Если на картинке вообще нет объектов (только фон)
+            # Если на картинке вообще нет объектов из финальной таблицы,
+            # показываем процент по сценарию «фон»: 100% для чистого фона и
+            # 0% для ложной отрисовки объекта. Так панель не вводит в
+            # заблуждение отсутствием численной точности.
             if np.sum(pred_mask_final > 0) > 0:
-                match = "❌ Галлюцинация (Нарисовала объект на фоне)"
+                true_accuracy = 0.0
+                accuracy_label = f"Точность фона: {true_accuracy:.1f}%"
+                match = f"❌ Галлюцинация: {true_accuracy:.1f}% (объект на фоне)"
             else:
-                match = "✅ Идеально чистый фон"
+                true_accuracy = 100.0
+                accuracy_label = f"Точность фона: {true_accuracy:.1f}%"
+                match = f"✅ Чистый фон: {true_accuracy:.1f}%"
 
         # --- 5. КОМПОНОВКА ПАНЕЛИ ---
         p1 = cv2.resize(img_bgr, DISPLAY_SIZE)
+        p1 = put_text_ru(
+            p1,
+            accuracy_label,
+            (8, 8),
+            font_size=18,
+            color=(255, 255, 255),
+            background_box=(0, 0, DISPLAY_SIZE[0], 34),
+            background_color=(0, 0, 0),
+            max_width=DISPLAY_SIZE[0] - 16,
+        )
 
         # Красим маски в BGR для сохранения в файл
         m_gt_rgb = mask_to_rgb(mask_gt_final, COLOR_RULES)
