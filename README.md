@@ -10,3 +10,29 @@
 ## AutoML
 - Подробный план внедрения AutoML: `doc/AutoML/requirements_automl_implementation.md`.
 - Дорожная карта и критерии готовности: `doc/AutoML/automl_readiness_roadmap.md`.
+
+## Обучение без предобученного энкодера
+
+По умолчанию U-Net собирается с энкодером MobileNetV2 на весах ImageNet. Если нужно сначала обучить модель полностью с нуля, запустите обучение со случайной инициализацией энкодера и без автозагрузки старой `models/final_model.keras`:
+
+```bash
+python train.py 30 --encoder-weights none --fresh-start
+```
+
+В этом режиме энкодер автоматически размораживается, потому что случайно инициализированный энкодер нельзя оставлять замороженным.
+
+После этого есть два варианта продолжения:
+
+1. Продолжить обучать тот же энкодер, который был обучен с нуля:
+
+```bash
+python train.py 20 --unfreeze
+```
+
+2. Подключить ImageNet-энкодер позже, но сохранить уже обученный декодер/голову из `models/final_model.keras`:
+
+```bash
+python train.py 20 --encoder-weights imagenet --unfreeze --load-decoder-only
+```
+
+Если нужно сделать режим обучения с нуля настройкой по умолчанию, поменяйте в `configs/config.yaml` значение `model.encoder_weights` с `"imagenet"` на `"none"`.
